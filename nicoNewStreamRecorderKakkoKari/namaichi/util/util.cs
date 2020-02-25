@@ -22,8 +22,8 @@ class app {
 	}
 }
 class util {
-	public static string versionStr = "ver0.1.3";
-	public static string versionDayStr = "2019/05/11";
+	public static string versionStr = "ver0.1.5";
+	public static string versionDayStr = "2020/02/24";
 	public static bool isShowWindow = true;
 	public static bool isStdIO = false;
 	
@@ -490,7 +490,7 @@ class util {
 	}
 	public static string getPageSource(string _url, ref WebHeaderCollection getheaders, CookieContainer container = null, string referer = null, bool isFirstLog = true, int timeoutMs = 5000) {
 		//util.debugWriteLine("getpage 01");
-		timeoutMs = 2000;
+		timeoutMs = 5000;
 		/*
 		string a;
 		try {
@@ -549,7 +549,7 @@ class util {
 		return null;
 	}
 	public static string getPageSource(string _url, CookieContainer container = null, string referer = null, bool isFirstLog = true, int timeoutMs = 5000) {
-		timeoutMs = 2000;
+		timeoutMs = 5000;
 		/*
 		string a = "";
 		try {

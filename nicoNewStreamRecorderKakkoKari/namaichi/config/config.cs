@@ -196,6 +196,9 @@ public class config
 			{"rokugaTourokuHeight","500"},
 			{"rokugaTourokuMaxRecordingNum","10"},
 			{"rokugaTourokuQualityRank","0,1,2,3,4,5"},
+			
+			{"recBackColor","-1"},
+			{"recForeColor","-16777216"},
 		};
 
 		var buf = new Dictionary<string,string>();

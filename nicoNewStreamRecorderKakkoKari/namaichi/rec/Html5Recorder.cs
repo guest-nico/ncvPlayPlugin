@@ -245,7 +245,9 @@ namespace namaichi.rec
 				
 				if (!isSub) {
 					//timeshift option
+					
 					timeShiftConfig = null;
+					if (isTimeShift && !isRtmpOnlyPage) timeShiftConfig = getTimeShiftConfig(null, null, null, null, null, null, rm.cfg, 0);
 					
 					recFolderFile = new string[]{"", "", ""};
 				
@@ -410,16 +412,16 @@ namespace namaichi.rec
 			string group, string title, string lvId, string communityNum, 
 			string userId, config.config cfg, long _openTime) {
 			var segmentSaveType = cfg.get("segmentSaveType");
-			var lastFile = util.getLastTimeshiftFileName(host,
-					group, title, lvId, communityNum, userId, cfg, _openTime);
-			util.debugWriteLine("timeshift lastfile " + lastFile);
-			string[] lastFileTime = util.getLastTimeShiftFileTime(lastFile, segmentSaveType);
-			if (lastFileTime == null)
-				util.debugWriteLine("timeshift lastfiletime " + 
-				                    ((lastFileTime == null) ? "null" : string.Join(" ", lastFileTime)));
+			//var lastFile = util.getLastTimeshiftFileName(host,
+			//		group, title, lvId, communityNum, userId, cfg, _openTime);
+			//util.debugWriteLine("timeshift lastfile " + lastFile);
+			//string[] lastFileTime = util.getLastTimeShiftFileTime(lastFile, segmentSaveType);
+			//if (lastFileTime == null)
+			//	util.debugWriteLine("timeshift lastfiletime " + 
+			//	                    ((lastFileTime == null) ? "null" : string.Join(" ", lastFileTime)));
 			
 			try {
-				var o = new TimeShiftOptionForm(lastFileTime, segmentSaveType, rm.cfg);
+				var o = new TimeShiftOptionForm(null, segmentSaveType, rm.cfg);
 				
 				try {
 					rm.form.Invoke((MethodInvoker)delegate() {

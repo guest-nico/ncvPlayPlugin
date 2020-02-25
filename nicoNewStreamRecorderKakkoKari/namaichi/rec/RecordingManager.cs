@@ -48,7 +48,7 @@ namespace namaichi.rec
 		public RedistInfo ri = null;
 		
 		public bool isTitleBarInfo = false;
-		public bool isPlayOnlyMode = false;
+		public bool isPlayOnlyMode = true;
 		
 		public TimeShiftConfig argTsConfig;
 		public utility.RegGetter regGetter = new namaichi.utility.RegGetter();
@@ -100,6 +100,7 @@ namespace namaichi.rec
 				}
 			
 				form.setQualityList(new string[]{}, "");
+				var q = form.qualityBox.Items;
 				
 				isRecording = true;
 				if (isPlayOnlyMode) {

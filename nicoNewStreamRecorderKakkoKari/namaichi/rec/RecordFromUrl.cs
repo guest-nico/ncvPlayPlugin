@@ -133,7 +133,7 @@ namespace namaichi.rec
 			
 			while (true && this == rm.rfu) {
 				util.debugWriteLine("pagetype " + pageType);
-				if (pageType == 0) {
+				if (pageType == 0 || pageType == 7) {
 					var isJikken = res.IndexOf("siteId&quot;:&quot;nicocas") > -1;
 					int recResult = 0;
 					
@@ -328,8 +328,10 @@ namespace namaichi.rec
 //					if (isRtmp) return getRtmpPageType(res, isSub, out rr, cc);
 					if (isRtmpMain) {
 						if (res.IndexOf("%3Cgetplayerstatus%20") > -1) {
+						//if (res.IndexOf("<getplayerstatus status=\"ok\"") > -1) {
 							var _res = util.getRegGroup(res, "(%3Cgetplayerstatus%20.+?%3C%2Fgetplayerstatus%3E)");
 							_res = System.Net.WebUtility.UrlDecode(_res);
+							//var _res = res;
 							var isTimeShift = true;
 							if (_res == null) continue;
 							var ret = util.getPageTypeRtmp(_res, ref isTimeShift, false);

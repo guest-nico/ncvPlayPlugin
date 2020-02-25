@@ -60,6 +60,7 @@ namespace namaichi
 			//read std
 //			args = new String[]{"-EngineMode=3"};
 			//startStdRead();
+			//config.set("EngineMode", "1");
 			
 			#if !DEBUG
 				FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -101,6 +102,8 @@ namespace namaichi
 				util.debugWriteLine(e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
 			}
 			
+			setBackColor(Color.FromArgb(int.Parse(config.get("recBackColor"))));
+			setForeColor(Color.FromArgb(int.Parse(config.get("recForeColor"))));
 		}
 
 		private void recBtnAction(object sender, EventArgs e) {
@@ -424,11 +427,14 @@ namespace namaichi
 			try {
 				if (!IsDisposed) {
 					int qualityCount; string qualityText;
-					var qualityListCount = getQualityListInfo(out qualityCount, out qualityText);
+					getQualityListInfo(out qualityCount, out qualityText);
 					var isChange = false;
 					var isTextChange = false;
-					for(var i = 0; i < l.Length; i++)
-						if (l.Length != qualityCount || l[i] != qualityBox.Items[i].ToString()) isChange = true;
+					if (l.Length != qualityCount) isChange = true;
+					else {
+						for(var i = 0; i < l.Length; i++)
+							if (l[i] != qualityBox.Items[i].ToString()) isChange = true;
+					}
 					if (qualityText != recQuality) isTextChange = true;
 					if (!isChange && !isTextChange) return;
 							
@@ -452,7 +458,7 @@ namespace namaichi
 			
 			
 		}
-		private bool getQualityListInfo(out int count, out string text) {
+		public bool getQualityListInfo(out int count, out string text) {
 			var ret = false;
 			count = -1; text = null;
 			var _count = -1; string _text = null;
@@ -474,6 +480,7 @@ namespace namaichi
 	       	}
 			return ret;
 		}
+		
 		void QualityBoxTextUpdate(object sender, EventArgs e)
 		{
 			util.debugWriteLine("quality box text Update " + qualityBox.SelectedIndex + " a " + qualityBox.Text);
@@ -496,6 +503,47 @@ namespace namaichi
 			} catch (Exception e) {
 	       		util.debugWriteLine(e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
 	       	}
+		}
+				void FormColorMenuItemClick(object sender, EventArgs e)
+		{
+			var d = new ColorDialog();
+			var r = d.ShowDialog();
+			if (r == DialogResult.OK) {
+				setBackColor(d.Color);
+				config.set("recBackColor", d.Color.ToArgb().ToString());
+			}
+		}
+		private void setBackColor(Color color) {
+			BackColor = //commentList.BackgroundColor = 
+				color;
+			//if (color != 
+		}
+		void CharacterColorMenuItemClick(object sender, EventArgs e)
+		{
+			var d = new ColorDialog();
+			var r = d.ShowDialog();
+			if (r == DialogResult.OK) {
+				setForeColor(d.Color);
+				config.set("recForeColor", d.Color.ToArgb().ToString());
+			}
+		}
+		private void setForeColor(Color color) {
+			var c = getChildControls(this);
+			foreach (var _c in c)
+				if (_c.GetType() == typeof(GroupBox) ||
+				    _c.GetType() == typeof(Label)) _c.ForeColor = color;
+		}
+		private List<Control> getChildControls(Control c) {
+			util.debugWriteLine("cname " + c.Name);
+			var ret = new List<Control>();
+			foreach (Control _c in c.Controls) {
+				var children = getChildControls(_c);
+				ret.Add(_c);
+				ret.AddRange(children);
+				util.debugWriteLine(c.Name + " " + children.Count);
+			}
+			util.debugWriteLine(c.Name + " " + ret.Count);
+			return ret;
 		}
 	}
 }

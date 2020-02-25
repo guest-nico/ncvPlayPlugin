@@ -47,6 +47,9 @@ namespace namaichi
 			nicoSessionComboBox1.Selector.PropertyChanged += Selector_PropertyChanged;
 //			nicoSessionComboBox2.Selector.PropertyChanged += Selector2_PropertyChanged;
 			setFormFromConfig();
+			
+			setBackColor(Color.FromArgb(int.Parse(cfg.get("recBackColor"))));
+			setForeColor(Color.FromArgb(int.Parse(cfg.get("recForeColor"))));
 		}
 		
 		void hozonFolderSanshouBtn_Click(object sender, EventArgs e)
@@ -358,7 +361,40 @@ namespace namaichi
 //			if (isDefaultEngineChkBox.Checked) return "0";
 			return "1";
 		}
-		
-
+		private void setBackColor(Color color) {
+			BackColor = color;
+			var c = getChildControls(this);
+			foreach (var _c in c)
+				if (//_c.GetType() == typeof(GroupBox) ||
+				    _c.GetType() == typeof(System.Windows.Forms.Panel) || 
+				    _c.GetType() == typeof(System.Windows.Forms.Form) 
+				   	//_c.GetType() == typeof(System.Windows.Forms.TabPage) ||
+				   //	_c.GetType() == typeof(System.Windows.Forms.TabControl)
+				   )
+						_c.BackColor = color;
+		}
+		private void setForeColor(Color color) {
+			var c = getChildControls(this);
+			foreach (var _c in c)
+				if (//_c.GetType() == typeof(GroupBox) ||
+				    _c.GetType() == typeof(Label) ||
+				    _c.GetType() == typeof(CheckBox) ||
+				   	_c.GetType() == typeof(RadioButton)) _c.ForeColor = color;
+			
+		}
+		private List<Control> getChildControls(Control c) {
+			util.debugWriteLine("cname " + c.Name);
+			var ret = new List<Control>();
+			foreach (Control _c in c.Controls) {
+				ret.Add(_c);
+				if (_c.GetType() != typeof(GroupBox)) {
+					var children = getChildControls(_c);
+					ret.AddRange(children);
+				   }
+				//util.debugWriteLine(c.Name + " " + children.Count);
+			}
+			util.debugWriteLine(c.Name + " " + ret.Count);
+			return ret;
+		}
 	}
 }

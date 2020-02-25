@@ -74,7 +74,7 @@ namespace namaichi.rec
 		private WebSocket[] himodukeWS = new WebSocket[2];
 			
 //		private System.Threading.Thread mainThread;
-		//private TimeShiftCommentGetter tscg = null;
+		//public TimeShiftCommentGetter tscg = null;
 		
 		bool isWaitNextConnection = false;
 		List<WebSocket> wsList = new List<WebSocket>();
@@ -417,13 +417,30 @@ namespace namaichi.rec
 				}
 //				if (engineMode == "3") return;
 				
+				
 				var bestGettableQuolity = getBestGettableQuolity(e.Message);
 				var currentQuality = util.getRegGroup(e.Message, "\"quality\":\"(.+?)\"");
-				if (isFirstChoiceQuality(currentQuality, bestGettableQuolity)) {
-					//if (!isRtmp)
+				var gettableList = util.getRegGroup(e.Message, "\"qualityTypes\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',');
+				
+				int listCount = 0;
+				string listText = "";
+				rm.form.getQualityListInfo(out listCount, out listText);
+				
+				if (listText == "" ||
+				    	Array.IndexOf(gettableList, listText) == -1) {
+					if (isFirstChoiceQuality(currentQuality, bestGettableQuolity)) {
 						rm.form.setQualityList(getQualityList(e.Message), currentQuality);
-					record(e.Message, currentQuality);
-				} else sendUseableStreamGetCommand(bestGettableQuolity);
+						record(e.Message, currentQuality);
+					} else sendUseableStreamGetCommand(bestGettableQuolity);
+				} else {
+					if (currentQuality == listText) {
+						record(e.Message, currentQuality);
+					} else sendUseableStreamGetCommand(listText);
+				}
+					
+				
+				
+				
 //				Task.Run(() => {
 //				         	sendIntervalPong();
 //				         });

@@ -47,6 +47,9 @@ namespace namaichi
 			this.終了ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.toolMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.optionMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.visualMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.formColorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+			this.characterColorMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.helpMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.バージョン情報VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
 			this.label12 = new System.Windows.Forms.Label();
@@ -102,6 +105,7 @@ namespace namaichi
 			this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
 									this.fileMenuItem,
 									this.toolMenuItem,
+									this.visualMenuItem,
 									this.helpMenuItem});
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
@@ -142,6 +146,29 @@ namespace namaichi
 			this.optionMenuItem.Size = new System.Drawing.Size(147, 22);
 			this.optionMenuItem.Text = "オプション(&O)";
 			this.optionMenuItem.Click += new System.EventHandler(this.optionItem_Select);
+			// 
+			// visualMenuItem
+			// 
+			this.visualMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+									this.formColorMenuItem,
+									this.characterColorMenuItem});
+			this.visualMenuItem.Name = "visualMenuItem";
+			this.visualMenuItem.Size = new System.Drawing.Size(62, 22);
+			this.visualMenuItem.Text = "表示(&V)";
+			// 
+			// formColorMenuItem
+			// 
+			this.formColorMenuItem.Name = "formColorMenuItem";
+			this.formColorMenuItem.Size = new System.Drawing.Size(182, 22);
+			this.formColorMenuItem.Text = "ウィンドウの色(&W)";
+			this.formColorMenuItem.Click += new System.EventHandler(this.FormColorMenuItemClick);
+			// 
+			// characterColorMenuItem
+			// 
+			this.characterColorMenuItem.Name = "characterColorMenuItem";
+			this.characterColorMenuItem.Size = new System.Drawing.Size(182, 22);
+			this.characterColorMenuItem.Text = "文字の色(&S)";
+			this.characterColorMenuItem.Click += new System.EventHandler(this.CharacterColorMenuItemClick);
 			// 
 			// helpMenuItem
 			// 
@@ -220,7 +247,10 @@ namespace namaichi
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
-		private System.Windows.Forms.ComboBox qualityBox;
+		private System.Windows.Forms.ToolStripMenuItem characterColorMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem formColorMenuItem;
+		private System.Windows.Forms.ToolStripMenuItem visualMenuItem;
+		public System.Windows.Forms.ComboBox qualityBox;
 		public System.Windows.Forms.Button playerBtn;
 		private System.Windows.Forms.Label label12;
 		private System.Windows.Forms.ToolStripMenuItem バージョン情報VToolStripMenuItem;

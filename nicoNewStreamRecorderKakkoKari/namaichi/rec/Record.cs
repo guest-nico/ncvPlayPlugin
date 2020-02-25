@@ -120,7 +120,9 @@ namespace namaichi.rec
 			
 			var _m = (isPlayOnlyMode) ? "視聴" : "録画";
 			if (isTimeShift) {
-				
+				//var isHokan = !((WebSocketRecorder)wr).isSaveComment && ((WebSocketRecorder)wr).isChase; 
+				rm.form.addLogText("タイムシフト" + "の" + _m + "を開始します(画質:" + quality + ")");
+				timeShiftOnTimeRecord();
 			} else {
 				if (engineMode != "3") {
 					if (isSub) {
@@ -920,6 +922,310 @@ namespace namaichi.rec
 					_resM3u8.IndexOf("#EXT-X-ENDLIST") > -1;
 			*/
 		}
-		
+		private void timeShiftOnTimeRecord() {
+			
+			
+			var start = (tsConfig.timeSeconds - 10 < 0) ? 0 : (tsConfig.timeSeconds - 10);
+			var baseMasterUrl = hlsMasterUrl;
+			if (true) baseMasterUrl += "&start=" + (start.ToString());
+			
+			wr.tsHlsRequestTime = DateTime.Now;
+			wr.tsStartTime = TimeSpan.FromSeconds((double)start);
+			hlsSegM3uUrl = getHlsSegM3uUrl(baseMasterUrl);
+			rm.hlsUrl = hlsSegM3uUrl;
+			rm.form.setPlayerBtnEnable(true);
+			
+			
+				
+//			if (isFFmpegThrough()) realtimeFFmpeg = new RealTimeFFmpeg();
+			
+			while (rm.rfu == rfu && isRetry) {
+				if (isReConnecting) {
+					Thread.Sleep(100);
+					continue;
+				}
+				if (hlsSegM3uUrl == null) {
+					addDebugBuf("hlsSegM3uUrl null reconnect");
+					setReconnecting(true);
+					reConnect();
+					continue;
+				}
+				
+				if (engineMode == "0" || engineMode == "3") {
+
+					targetDuration = addNewTsTaskList(hlsSegM3uUrl);
+
+					/*
+					if (engineMode == "3" && 
+					    	((WebSocketRecorder)wr).tscg != null && 
+					    	((WebSocketRecorder)wr).tscg.isEnd && false) {
+						isRetry = false;
+						isEndProgram = true;
+					}
+					*/
+					Thread.Sleep((int)(targetDuration * 500));
+				}
+				
+			}
+			rm.hlsUrl = "end";
+//			rm.form.setPlayerBtnEnable(false);
+			
+			if (isEndProgram) {
+				rm.form.addLogText("視聴を完了しました");
+			}
+			
+			isEnd = true;
+		}
+		private double addNewTsTaskList(string hlsSegM3uUrl) {
+			addDebugBuf("addNewTsTaskList " + hlsSegM3uUrl);
+//			var wc = new WebHeaderCollection();
+
+			addDebugBuf("getpage mae");
+			
+			var res = util.getPageSource(hlsSegM3uUrl, container, null, false, 2000);
+			addDebugBuf("addNewTsTaskList segm3u get " + res);
+//			util.debugWriteLine("m3u8 " + res);
+			
+			 
+			//if (otstul != null && !otstul.isStarted) outputTimeShiftTsUrlList(res);
+			
+			
+			//shuusei? 
+			int min = (res == null) ? -1 : int.Parse(util.getRegGroup(res, "(\\d+).ts", 1, rm.regGetter.getTs()));
+			//if (res == null || (lastSegmentNo != -1 && res.IndexOf(lastSegmentNo.ToString()) == -1)) {
+			if (res == null || (lastSegmentNo != -1 && min != -1 && min > lastSegmentNo)) {
+			//if (res == null) {
+				addDebugBuf("nuke? lastSegmentNo " + lastSegmentNo + " min " + " min " + min + " res " + res);
+//				rm.form.addLogText("リトライ lastSegmentNo " + lastSegmentNo + " res " + res + " min " + min);
+				setReconnecting(true);
+//				if (!isReConnecting) 
+					reConnect();
+				
+				return 3.0;
+			}
+			var isTimeShiftPlaylist = res.IndexOf("#STREAM-DURATION") > -1;
+			if (!isTimeShift && isTimeShiftPlaylist) {
+				return -1;
+			}
+			double streamDuration = -1; 
+			var _streamDuration = util.getRegGroup(res, "#STREAM-DURATION:(.+)");
+			if (_streamDuration != null) {
+				streamDuration = double.Parse(_streamDuration, NumberStyles.Float);
+				if (tsConfig.endTimeSeconds < 0)
+					tsConfig.endTimeSeconds = (int)(streamDuration + 15);
+			}
+			
+			var baseTime = getBaseTimeFromPlaylist(res);
+			var second = 0.0;
+			var secondSum = 0.0;
+			var targetDuration = 2.0;
+			lock(recordLock) {
+				bool _isRetry = isRetry, _isEndProgram = isEndProgram, _isEnd = isEnd;
+				var lastListSegNo = -1;
+				foreach (var s in res.Split('\n')) {
+					var _second = util.getRegGroup(s, "^#EXTINF:(\\d+(\\.\\d+)*)");
+					if (_second != null) {
+						second = double.Parse(_second);
+						secondSum += second;
+					}
+					var _targetDuration = util.getRegGroup(s, "^#EXT-X-TARGETDURATION:(\\d+(\\.\\d+)*(e\\d+)*)");
+					if (_targetDuration != null) {
+						targetDuration = double.Parse(_targetDuration, NumberStyles.Float);
+					}
+					var isEndList = s.IndexOf("#EXT-X-ENDLIST") > -1;
+					if (isEndList) {
+						_isRetry = false;
+						_isEndProgram = true;
+					}
+					var _allDuration = util.getRegGroup(s, "^#STREAM-DURATION:(.+)");
+					if (_allDuration != null) {
+						allDuration = double.Parse(_allDuration, NumberStyles.Float);
+					}
+					
+					if (s.IndexOf(".ts") < 0) continue;
+					var no = lastListSegNo = int.Parse(util.getRegGroup(s, "(\\d+)"));
+					var url = baseUrl + s;
+					
+					var isInList = false;
+					lock (newGetTsTaskList) {
+						foreach (var t in newGetTsTaskList)
+							if (t.no == no) isInList = true;
+					}
+					
+					if (isEndTimeshift(streamDuration, res, second)) {
+						addDebugBuf("isEndTimeshift true");
+						_isRetry = false;
+						_isEndProgram = true;
+					}
+					
+					var startTime = baseTime + secondSum - second;
+					if (isTimeShift && 
+					    	((tsConfig.timeType == 0 && startTime < tsConfig.timeSeconds) ||
+					     	(tsConfig.timeType == 1 && startTime <= tsConfig.timeSeconds))) continue;
+					if (isTimeShift && tsConfig.endTimeSeconds > 0 && startTime >= tsConfig.endTimeSeconds) {
+						addDebugBuf("timeshift tsConfig.endtime " + tsConfig.endTimeSeconds + " now starttime " + startTime + " tsConfig.timeseconds " + tsConfig.timeSeconds);
+						_isRetry = false;
+						_isEndProgram = true;
+						continue;
+					}
+					var startTimeStr = util.getSecondsToStr(startTime);
+					
+					if (no > lastSegmentNo && !isInList) {
+						if (engineMode == "3") {
+							if (wr.firstSegmentSecond == -1) 
+								wr.firstSegmentSecond = startTime;
+							_isRetry = false;
+							_isEnd = _isEndProgram = true;
+							break;
+						}
+						
+					}
+					
+					
+					
+				}
+
+				
+				
+				if (lastSegmentNo == lastListSegNo && !_isRetry) {
+					isRetry = _isRetry;
+					isEndProgram = _isEndProgram;
+					isEnd = _isEnd;
+				}
+				
+				
+				//addDebugBuf(rm.form.getKeikaTime());
+			}
+			return targetDuration;
+		}
+		private void getTsTask(numTaskInfo nti, byte[] tsBytes) {
+			addDebugBuf("getTsTask url " + nti.url);
+			var url = nti.url;
+			var startTime = nti.startSecond;
+			
+			//byte[] tsBytes;
+			try {
+				/*
+				var isDebug = false;
+				if (isDebug) {
+					var getFileMaeTime = DateTime.Now;
+					var tsBytes0 = util.getFileBytes(url, container, true, 0);
+					var getFileAto0 = DateTime.Now;
+					var tsBytes1 = util.getFileBytes(url, container, false, 0);
+					var getFileAto1 = DateTime.Now;
+					var tsBytes2 = util.getFileBytes(url, container, true, 2);
+					var getFileAto2 = DateTime.Now;
+					var tsBytes3 = util.getFileBytes(url, container, false, 2);
+					var getFileAto3 = DateTime.Now;
+					tsBytes = tsBytes0;
+					
+					//test
+					var thTime0 = DateTime.Now;
+					byte[] ff0, ff1;
+					var t0 = Task.Run(() => ff0 = util.getFileBytes(url, container, false, 2));
+					var t1 = Task.Run(() => ff1 = util.getFileBytes(url, container, false, 2));
+					var rr0 = t0.Result;
+					var rr1 = t1.Result;
+					var thTime1 = DateTime.Now;
+					
+					addDebugBuf("getTsTask getFileBytes getFileTime " + (getFileAto3 - getFileAto2) + " " + (getFileAto2 - getFileAto1) + " " + (getFileAto1 - getFileAto0) + " " + (getFileAto0 - getFileMaeTime) + " b " + (thTime1 - thTime0));
+					rm.form.addLogText("ファイル取得時間 A " +   + (getFileAto3 - getFileAto2) + " " + (getFileAto2 - getFileAto1) + " " + (getFileAto1 - getFileAto0) + " " + (getFileAto0 - getFileMaeTime) + " b " + (thTime1 - thTime0));
+					addDebugBuf("getfilebytes did url " + url + " " + tsBytes);
+				} else {
+					tsBytes = util.getFileBytes(url, container, true, 2);
+					addDebugBuf("getfilebytes did url " + url + " " + tsBytes);
+				}
+				*/
+				
+				lock (newGetTsTaskList) {
+					for (int i = 0; i < newGetTsTaskList.Count; i++) {
+						if (newGetTsTaskList[i].url == url) {
+							if (tsBytes == null || (lastSegmentNo > 10000 && newGetTsTaskList[i].no - lastSegmentNo > 5500)) {
+								newGetTsTaskList.Clear();
+								if (!isReConnecting) {
+									addDebugBuf("getTsTask !isReconnecting reconnect");
+									reConnect();
+								}
+//								rm.form.addLogText("セグメント取得エラー " + url);
+								setReconnecting(true);
+								break;
+							}
+							var a = recordedSecond;
+							newGetTsTaskList[i].res = tsBytes;
+							recordedSecond += newGetTsTaskList[i].second;
+							recordedBytes += tsBytes.Length;
+							var b = recordedSecond;
+							addDebugBuf("aads " + a + " " + b + " no " + newGetTsTaskList[i].no);
+						}
+							
+					}
+					for (int i = 0; i < newGetTsTaskList.Count; i++) {
+						addDebugBuf("write file " + i + " url " + newGetTsTaskList[i].no);
+						if (newGetTsTaskList[i].res == null) break;
+						
+						if (newGetTsTaskList[i].no <= lastSegmentNo) {
+							continue;
+						}
+						bool ret;
+						ret = true;
+						
+
+						addDebugBuf("write ok " + ret + " " + newGetTsTaskList[i].no);
+						if (ret) {
+							if (wr.firstSegmentSecond == -1) 
+								wr.firstSegmentSecond = newGetTsTaskList[i].startSecond;
+							
+							//recordedNo.Add(newGetTsTaskList[i].no.ToString());
+							recordedNo.Add(newGetTsTaskList[i].fileName);
+							lastSegmentNo = newGetTsTaskList[i].no;
+							var fName = util.getRegGroup(newGetTsTaskList[i].fileName, ".*(\\\\|/|^)(.+)", 2);
+//							if (fName == 
+							lastRecordedSeconds = util.getSecondsFromStr(fName);
+							lastWroteFileSecond = newGetTsTaskList[i].second;
+							
+							util.debugWriteLine("aaaaa " + tsConfig.endTimeSeconds + " " + startTime + " " +  newGetTsTaskList[i].startSecond + " " + nti.second + " a " + (startTime + nti.second) + " " + (startTime + nti.second >= tsConfig.endTimeSeconds) + " " + newGetTsTaskList.Count + " " + i);
+							if (isTimeShift && tsConfig.endTimeSeconds > 0 && newGetTsTaskList[i].startSecond + nti.second >= tsConfig.endTimeSeconds) {
+								addDebugBuf("getTsTask timeshift tsConfig.endtime " + tsConfig.endTimeSeconds + " now starttime " + startTime + " tsConfig.timeseconds " + tsConfig.timeSeconds);
+								isRetry = false;
+								isEndProgram = true;
+								continue;
+							}
+							
+						} else {
+							newGetTsTaskList.Clear();
+							if (!isReConnecting) {
+								addDebugBuf("getTsTask write ret false reconnect");
+								reConnect();
+							}
+							setReconnecting(true);
+							break;
+						}
+						
+					}
+					addDebugBuf("write ok2");
+					newGetTsTaskList.Remove(nti);
+					/*
+					for (int i = 0; i < newGetTsTaskList.Count; i++) {
+						if (newGetTsTaskList[i].res != null) 
+							newGetTsTaskList.RemoveAt(i);
+					}
+					*/
+				}
+				//if (!isPlayOnlyMode)
+				//	setRecordState();
+				/*
+				if (isTimeShift) {
+					var keika = util.getSecondsToKeikaJikan(startTime);
+					if (allDuration != -1) keika += "\n/" + util.getSecondsToKeikaJikan(allDuration);
+					rm.form.setKeikaJikan(keika, "a");
+				}
+				*/
+				
+			} catch(Exception e) {
+				addDebugBuf(e.ToString());
+				addDebugBuf(e.Message + e.StackTrace + e.TargetSite);
+			}
+			
+		}
 	}
 }

@@ -348,6 +348,7 @@ namespace namaichi.rec
 						//arg += "-r " + url + " -y mp4:" + a + " -C S:" + ticket + " -o ";
 					}
 					rm.hlsUrl = "timeshift";
+					//rm.hlsUrl = arg;
 					util.debugWriteLine(arg + util.getMainSubStr(isSub, true));
 					return arg;
 					

@@ -107,6 +107,7 @@ namespace namaichi
 			this.isSetVposStartTime.TabIndex = 5;
 			this.isSetVposStartTime.Text = "コメントのvposを録画開始時間を起点にする";
 			this.isSetVposStartTime.UseVisualStyleBackColor = true;
+			this.isSetVposStartTime.Visible = false;
 			// 
 			// isRenketuLastFile
 			// 

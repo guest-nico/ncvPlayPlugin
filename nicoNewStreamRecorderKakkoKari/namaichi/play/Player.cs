@@ -69,7 +69,7 @@ namespace namaichi.play
 		         			setPlayerBtnText("視聴");
 		         			form.recBtn.Enabled = true;
 						});
-		         		form.rec.isPlayOnlyMode = false;
+		         		//form.rec.isPlayOnlyMode = false;
 		         		return;
 		         	}
 					
@@ -94,7 +94,7 @@ namespace namaichi.play
 						form.recBtn.Enabled = true;
 						form.rec.rec();
 					}
-				    form.rec.isPlayOnlyMode = false;
+				    //form.rec.isPlayOnlyMode = false;
 				});
 			});
 		}
@@ -114,7 +114,7 @@ namespace namaichi.play
 		         			break;
 				        }
 						if (form.rec.hlsUrl == "timeshift") {
-							form.addLogText("RTMPのタイムシフト録画中はツールでの視聴ができません。");
+							form.addLogText("RTMPのタイムシフトはツールでの視聴ができません。");
 		         			form.rec.hlsUrl = null;
 		         			stopPlaying(true, true);
 		         			if (isDefaultPlayer) ctrlFormClose();
@@ -193,7 +193,7 @@ namespace namaichi.play
 		private void sendPlayCommand(bool isDefaultPlayer) {
 			Environment.SetEnvironmentVariable("SDL_AUDIODRIVER", "directsound", EnvironmentVariableTarget.Process);
 			if (form.rec.hlsUrl.IndexOf("reconnecting") > -1 || form.rec.hlsUrl.IndexOf("end") > -1 || form.rec.hlsUrl == null) return;
-			if (true || form.rec.hlsUrl.StartsWith("http"))
+			if (form.rec.hlsUrl.StartsWith("http"))
 				playCommand(config.get("anotherPlayerPath"), form.rec.hlsUrl);
 			else
 				playCommandStd(config.get("anotherPlayerPath"), form.rec.hlsUrl);
