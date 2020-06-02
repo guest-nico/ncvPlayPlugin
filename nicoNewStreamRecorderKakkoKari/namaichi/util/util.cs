@@ -22,8 +22,8 @@ class app {
 	}
 }
 class util {
-	public static string versionStr = "ver0.1.5";
-	public static string versionDayStr = "2020/02/24";
+	public static string versionStr = "ver0.1.6";
+	public static string versionDayStr = "2020/06/03";
 	public static bool isShowWindow = true;
 	public static bool isStdIO = false;
 	
@@ -700,17 +700,25 @@ class util {
 		//if (res.IndexOf("siteId&quot;:&quot;nicolive2") > -1) {
 			var data = util.getRegGroup(res, "<script id=\"embedded-data\" data-props=\"([\\d\\D]+?)</script>");
 			var status = (data == null) ? null : util.getRegGroup(data, "&quot;status&quot;:&quot;(.+?)&quot;");
-			if (res.IndexOf("<!doctype html>") > -1 && data != null && status == "ON_AIR") return 0;
-			else if (res.IndexOf("<!doctype html>") > -1 && data != null && status == "ENDED") return 7;
+			if (res.IndexOf("<!doctype html>") > -1 && data != null && status == "ON_AIR" && data.IndexOf("webSocketUrl&quot;:&quot;ws") > -1) return 0;
+			else if (res.IndexOf("<!doctype html>") > -1 && data != null && status == "ENDED" && data.IndexOf("webSocketUrl&quot;:&quot;ws") > -1) return 7;
 			else if (util.getRegGroup(res, "(混雑中ですが、プレミアム会員の方は優先して入場ができます)") != null ||
 			        util.getRegGroup(res, "(ただいま、満員のため入場できません)") != null) return 1;
 	//		else if (util.getRegGroup(res, "<div id=\"comment_arealv\\d+\">[^<]+この番組は\\d+/\\d+/\\d+\\(.\\) \\d+:\\d+に終了いたしました。<br>") != null) return 2;
 			else if (res.IndexOf(" onclick=\"Nicolive.ProductSerial") > -1) return 8;
-			else if (res.IndexOf("※この放送はタイムシフトに対応しておりません。") > -1 && 
-			         res.IndexOf("に終了いたしました") > -1) return 2;
-			else if (util.getRegGroup(res, "(コミュニティフォロワー限定番組です。<br>)") != null) return 4;
-			else if (util.getRegGroup(res, "(に終了いたしました)") != null && res.IndexOf(" onclick=\"Nicolive.WatchingReservation") > -1) return 9;
-			else if (util.getRegGroup(res, "(に終了いたしました)") != null) return 2;
+			//else if (res.IndexOf("※この放送はタイムシフトに対応しておりません。") > -1 && 
+			//         res.IndexOf("に終了いたしました") > -1) return 2;
+			//else if (util.getRegGroup(res, "(コミュニティフォロワー限定番組です。<br>)") != null) return 4;
+			else if (res.IndexOf("isFollowerOnly&quot;:true") > -1 && res.IndexOf("isFollowed&quot;:false") > -1) return 4;
+			else if (status == "ENDED" && res.IndexOf("rejectedReasons&quot;:[&quot;notHaveTimeshiftTicket") > -1) return 9;
+			else if (status == "ENDED" && res.IndexOf("rejectedReasons&quot;:[&quot;notUseTimeshiftTicket") > -1) return 10;
+			else if (data.IndexOf("webSocketUrl&quot;:&quot;ws") == -1 &&
+			         status == "ENDED") return 2;
+			else if (res.IndexOf("rejectedReasons&quot;:[&quot;notHavePayTicket") > -1) return 11;
+			//else if (status == "ENDED" && res.IndexOf(" onclick=\"Nicolive.WatchingReservation") > -1) return 9;
+			
+			//else if (util.getRegGroup(res, "(に終了いたしました)") != null) return 2;
+			else if (status == "ENDED") return 2;
 			else if (util.getRegGroup(res, "(<archive>1</archive>)") != null) return 3;
 			else if (util.getRegGroup(res, "(チャンネル会員限定番組です。<br>)") != null) return 4;
 			else if (util.getRegGroup(res, "(<h3>【会場のご案内】</h3>)") != null) return 6;

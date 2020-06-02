@@ -72,13 +72,11 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\dll\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="SnkLib.App.CookieGetter, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SnkLib.App.CookieGetter.2.3.1.0\lib\net45\SnkLib.App.CookieGetter.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="SnkLib.App.CookieGetter">
+      <HintPath>..\packages\SnkLib.App.CookieGetter.2.4.0.0\lib\net45\SnkLib.App.CookieGetter.dll</HintPath>
     </Reference>
-    <Reference Include="SnkLib.App.CookieGetter.Forms, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\SnkLib.App.CookieGetter.Forms.1.4.0.0\lib\net45\SnkLib.App.CookieGetter.Forms.dll</HintPath>
-      <Private>True</Private>
+    <Reference Include="SnkLib.App.CookieGetter.Forms">
+      <HintPath>..\packages\SnkLib.App.CookieGetter.Forms.1.4.1.0\lib\net45\SnkLib.App.CookieGetter.Forms.dll</HintPath>
     </Reference>
     <Reference Include="SuperSocket.ClientEngine">
       <HintPath>..\packages\SuperSocket.ClientEngine.Core.0.10.0\lib\net45\SuperSocket.ClientEngine.dll</HintPath>

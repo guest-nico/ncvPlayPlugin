@@ -75,21 +75,39 @@ namespace namaichi.rec
 			
 		}
 		*/
-		public string[] getWebSocketInfo(string data, bool isRtmp) {
+		public string[] getWebSocketInfo(string data, bool isRtmp, MainForm form) {
 //			util.debugWriteLine(data);
 			var wsUrl = util.getRegGroup(data, "\"webSocketUrl\":\"([\\d\\D]+?)\"");
 			util.debugWriteLine("wsurl " + wsUrl + util.getMainSubStr(isSub));
 			//var broadcastId = util.getRegGroup(wsUrl, "/(\\d+)\\?");
 			var broadcastId = util.getRegGroup(data, "\"broadcastId\"\\:\"(\\d+)\"");
 			util.debugWriteLine("broadcastid " + broadcastId + util.getMainSubStr(isSub));
-			//string request = "{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"hls\",\"requireNewStream\":true,\"priorStreamQuality\":\"normal\", \"isLowLatency\": false},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}";
-			string request = (isRtmp && !isTimeShift) ?
-				("{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"rtmp\",\"requireNewStream\":true},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}")
-				 : ("{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"hls\",\"requireNewStream\":true,\"priorStreamQuality\":\"normal\", \"isLowLatency\": false},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}");
 			
-
-			util.debugWriteLine("request " + request + util.getMainSubStr(isSub));
-			return new string[]{wsUrl, request};
+			//string request = "{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"hls\",\"requireNewStream\":true,\"priorStreamQuality\":\"normal\", \"isLowLatency\": false},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}";
+			string request = null;
+			var ver = util.getRegGroup(wsUrl, "/v(\\d+)/");
+			if (ver == "1") {
+				if (broadcastId == null) {
+					form.addLogText("broadcastId not found");
+					return null;
+				}
+				
+				if (isRtmp && !isTimeShift) 
+					request = ("{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"rtmp\",\"requireNewStream\":true},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}");
+				else
+					request = //(isChase) ? 
+						//("{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"hls\",\"requireNewStream\":true,\"priorStreamQuality\":\"normal\", \"isLowLatency\": false},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}");
+						("{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"hls\",\"requireNewStream\":true,\"priorStreamQuality\":\"normal\", \"isLowLatency\": false,\"isChasePlay\":false},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}");
+			} else if (ver == "2") {
+				request = "{\"type\":\"startWatching\",\"data\":{\"stream\":{\"quality\":\"normal\",\"protocol\":\"hls\",\"latency\":\"high\",\"chasePlay\":false},\"room\":{\"protocol\":\"webSocket\",\"commentable\":true},\"reconnect\":false}}";
+			} else {
+				form.addLogText("unknown type " + ver);
+				return null;
+			}
+			
+//			string request = "{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"rtmp\"},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}";
+			util.debugWriteLine("request " + request);
+			return new string[]{wsUrl, request, ver};
 		}
 		private string[] getHtml5RecFolderFileInfo(string data, string type, bool isRtmpOnlyPage) {
 			string host, group, title, communityNum, userId;
@@ -235,7 +253,7 @@ namespace namaichi.rec
 	//			util.debugWriteLine(data);
 				
 				//0-wsUrl 1-request
-				webSocketRecInfo = getWebSocketInfo(data, isRtmp);
+				webSocketRecInfo = getWebSocketInfo(data, isRtmp, rm.form);
 				util.debugWriteLine("websocketrecinfo " + webSocketRecInfo);
 				if (webSocketRecInfo == null) continue;
 				
