@@ -158,6 +158,7 @@ public class config
 //			{"IsDefaultEngine","true"},
 			{"EngineMode","1"},
 			{"anotherEngineCommand",""},
+			{"latency","3.0"},
 			{"IsUsePlayer","true"},
 			{"IsDefaultPlayer","true"},
 			{"IsUseCommentViewer","true"},

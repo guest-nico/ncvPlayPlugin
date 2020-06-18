@@ -161,7 +161,7 @@ namespace namaichi.rec
 				
 				rr = new RtmpRecorder(lvid, container, rm, rfu, !isRtmp, recFolderFile, this, releaseTime);
 				Task.Run(() => {
-					rr.record();
+					rr.record(null, null);
 					rm.hlsUrl = "end";
 					if (rr.isEndProgram) isEndProgram = true;
 					isRetry = false;
@@ -175,10 +175,10 @@ namespace namaichi.rec
 		}
 		private void record() {
 			rec = new Record(rm, true, rfu, wi.hlsUrl, recFolderFile[1], -1, container, isTimeShift, this, lvid, tsConfig, releaseTime, null, recFolderFile[2], isSub);
+			
+			if (isRtmp) jr.availableQualities = new String[]{"RTMP"};
+			rm.form.setQualityList(jr.availableQualities, jr.requestQuality);
 			Task.Run(() => {
-			    if (isRtmp) jr.availableQualities = new String[]{"RTMP"};
-			    
-				rm.form.setQualityList(jr.availableQualities, jr.requestQuality);
 				rec.record(jr.requestQuality, isRtmp);
 				if (rec.isEndProgram) {
 					util.debugWriteLine("stop jrp recd" + util.getMainSubStr(isSub, true));
@@ -297,6 +297,9 @@ namespace namaichi.rec
 			if (jr.requestQuality == q) return;
 			jr.requestQuality = q;
 			Task.Run(() => reConnect());
+		}
+		override public void setLatency(string l) {
+			
 		}
 	}
 }

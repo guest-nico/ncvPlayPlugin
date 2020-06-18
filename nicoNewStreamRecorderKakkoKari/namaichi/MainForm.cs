@@ -52,10 +52,11 @@ namespace namaichi
 		private string[] args;
 		private play.Player player;
 		private string labelUrl;
-		
+		private Thread madeThread;
 		
 		public MainForm(string[] args)
 		{
+			madeThread = Thread.CurrentThread;
 			//args = "-nowindo -stdIO -IsmessageBox=false -IscloseExit=true lv316762771 -ts-start=1785s -ts-end=0s -ts-list=false -ts-list-m3u8=false -ts-list-update=5 -ts-list-open=false -ts-list-command=\"notepad{i}\" -ts-vpos-starttime=true -afterConvertMode=4 -qualityRank=0,1,2,3,4,5 -IsLogFile=true".Split(' ');
 			//read std
 //			args = new String[]{"-EngineMode=3"};
@@ -104,6 +105,7 @@ namespace namaichi
 			
 			setBackColor(Color.FromArgb(int.Parse(config.get("recBackColor"))));
 			setForeColor(Color.FromArgb(int.Parse(config.get("recForeColor"))));
+			latencyList.Text = config.get("latency");
 		}
 
 		private void recBtnAction(object sender, EventArgs e) {
@@ -440,12 +442,11 @@ namespace namaichi
 							
 		        	Invoke((MethodInvoker)delegate() {
 						try {
-					       	
-							
 					       	if (isChange) {
 					        	qualityBox.Items.Clear();
 								foreach (var _l in l) qualityBox.Items.Add(_l);
 					       	}
+					       	qualityBox.Tag = "set";
 							qualityBox.Text = recQuality;
 						} catch (Exception e) {
 		       	       		util.debugWriteLine("player btn enabled exception " + e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
@@ -483,8 +484,12 @@ namespace namaichi
 		
 		void QualityBoxTextUpdate(object sender, EventArgs e)
 		{
-			util.debugWriteLine("quality box text Update " + qualityBox.SelectedIndex + " a " + qualityBox.Text);
+			util.debugWriteLine("quality box text Update " + qualityBox.SelectedIndex + " a " + qualityBox.Text + " b " + qualityBox.Tag);
 			if (qualityBox.Text == "") return;
+			if (qualityBox.Tag == "set") {
+				qualityBox.Tag = null;
+				return;
+			}
 			if (rec.wsr != null)
 				rec.wsr.setQuality(qualityBox.Text);
 		}
@@ -543,6 +548,48 @@ namespace namaichi
 				util.debugWriteLine(c.Name + " " + children.Count);
 			}
 			util.debugWriteLine(c.Name + " " + ret.Count);
+			return ret;
+		}
+		void latencyTextUpdate(object sender, EventArgs e)
+		{
+			util.debugWriteLine("latency text Update " + latencyList.SelectedIndex + " a " + latencyList.Text);
+			if (latencyList.Text == "") return;
+			if (rec.wsr != null)
+				rec.wsr.setLatency(latencyList.Text);
+		}
+		public bool formAction(Action a, bool isAsync = true) {
+			if (IsDisposed || !util.isShowWindow) return false;
+			
+			if (Thread.CurrentThread == madeThread) {
+				try {
+					a.Invoke();
+				} catch (Exception e) {
+					util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+					return false;
+				}
+			} else {
+				try {
+					var r = BeginInvoke((MethodInvoker)delegate() {
+						try {    
+				       		a.Invoke();
+				       	} catch (Exception e) {
+							util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+						}
+					});
+					if (!isAsync) 
+						EndInvoke(r);
+				} catch (Exception e) {
+					util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+					return false;
+				} 
+			}
+			return true;
+		}
+		public string getLatencyText() {
+			string ret = null; 
+			formAction(() => {
+				ret = latencyList.Text;
+			}, false);
 			return ret;
 		}
 	}

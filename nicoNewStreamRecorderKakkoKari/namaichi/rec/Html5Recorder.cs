@@ -75,13 +75,22 @@ namespace namaichi.rec
 			
 		}
 		*/
-		public string[] getWebSocketInfo(string data, bool isRtmp, MainForm form) {
+		public string[] getWebSocketInfo(string data, bool isRtmp, MainForm form, string _latency) {
 //			util.debugWriteLine(data);
 			var wsUrl = util.getRegGroup(data, "\"webSocketUrl\":\"([\\d\\D]+?)\"");
+			//var latency = float.Parse(form.rec.cfg.get("latency"));
+			var latency = float.Parse(_latency);
+			wsUrl += "&frontend_id=" + (latency % 1 == 0 || isRtmp ? "90" : "12");
+			
 			util.debugWriteLine("wsurl " + wsUrl + util.getMainSubStr(isSub));
 			//var broadcastId = util.getRegGroup(wsUrl, "/(\\d+)\\?");
 			var broadcastId = util.getRegGroup(data, "\"broadcastId\"\\:\"(\\d+)\"");
 			util.debugWriteLine("broadcastid " + broadcastId + util.getMainSubStr(isSub));
+			
+			if (isRtmp) {
+				wsUrl = wsUrl.Replace("/v2/", "/v1/");
+				broadcastId = util.getRegGroup(wsUrl, "watch/.*?(\\d+)");
+			}
 			
 			//string request = "{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"hls\",\"requireNewStream\":true,\"priorStreamQuality\":\"normal\", \"isLowLatency\": false},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}";
 			string request = null;
@@ -99,7 +108,8 @@ namespace namaichi.rec
 						//("{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"hls\",\"requireNewStream\":true,\"priorStreamQuality\":\"normal\", \"isLowLatency\": false},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}");
 						("{\"type\":\"watch\",\"body\":{\"command\":\"getpermit\",\"requirement\":{\"broadcastId\":\"" + broadcastId + "\",\"route\":\"\",\"stream\":{\"protocol\":\"hls\",\"requireNewStream\":true,\"priorStreamQuality\":\"normal\", \"isLowLatency\": false,\"isChasePlay\":false},\"room\":{\"isCommentable\":true,\"protocol\":\"webSocket\"}}}}");
 			} else if (ver == "2") {
-				request = "{\"type\":\"startWatching\",\"data\":{\"stream\":{\"quality\":\"normal\",\"protocol\":\"hls\",\"latency\":\"high\",\"chasePlay\":false},\"room\":{\"protocol\":\"webSocket\",\"commentable\":true},\"reconnect\":false}}";
+				request = isRtmp ? "{\"type\":\"startWatching\",\"data\":{\"stream\":{\"quality\":\"normal\",\"protocol\":\"rtmp\",\"latency\":\"high\",\"chasePlay\":false},\"room\":{\"protocol\":\"webSocket\",\"commentable\":true},\"reconnect\":false}}"
+					: "{\"type\":\"startWatching\",\"data\":{\"stream\":{\"quality\":\"normal\",\"protocol\":\"hls\",\"latency\":\"" + (latency < 1.1 ? "low" : "high") + "\",\"chasePlay\":false},\"room\":{\"protocol\":\"webSocket\",\"commentable\":true},\"reconnect\":false}}";
 			} else {
 				form.addLogText("unknown type " + ver);
 				return null;
@@ -218,6 +228,7 @@ namespace namaichi.rec
 				var data = util.getRegGroup(res, "<script id=\"embedded-data\" data-props=\"([\\d\\D]+?)</script>");
 				var isRtmpOnlyPage = res.IndexOf("%3Cgetplayerstatus%20") > -1;
 				if (isRtmpOnlyPage) isRtmp = true;
+				if (isRtmpOnlyPage && isTimeShift) rm.hlsUrl = "timeshift";
 				//var pageType = util.getPageType(res);
 //				var pageType = pageType;
 				util.debugWriteLine("pagetype " + pageType + util.getMainSubStr(isSub));
@@ -251,11 +262,12 @@ namespace namaichi.rec
 				var programTime = util.getUnixToDatetime(endTime) - util.getUnixToDatetime(openTime);
 				var jisa = util.getUnixToDatetime(serverTime / 1000) - DateTime.Now;
 	//			util.debugWriteLine(data);
-				
+				var latency = rm.form.getLatencyText();
+	
 				//0-wsUrl 1-request
-				webSocketRecInfo = getWebSocketInfo(data, isRtmp, rm.form);
+				webSocketRecInfo = getWebSocketInfo(data, isRtmp, rm.form, latency);
 				util.debugWriteLine("websocketrecinfo " + webSocketRecInfo);
-				if (webSocketRecInfo == null) continue;
+				if (webSocketRecInfo == null && !isRtmpOnlyPage) continue;
 				
 				util.debugWriteLine("isnopermission " + isNoPermission);
 //				if (isNoPermission) webSocketRecInfo[1] = webSocketRecInfo[1].Replace("\"requireNewStream\":false", "\"requireNewStream\":true");
@@ -265,8 +277,10 @@ namespace namaichi.rec
 					//timeshift option
 					
 					timeShiftConfig = null;
-					if (isTimeShift && !isRtmpOnlyPage) timeShiftConfig = getTimeShiftConfig(null, null, null, null, null, null, rm.cfg, 0);
-					
+					if (isTimeShift && !isRtmpOnlyPage) {
+						timeShiftConfig = getTimeShiftConfig(null, null, null, null, null, null, rm.cfg, 0);
+						if (timeShiftConfig == null) return 2;
+					}
 					recFolderFile = new string[]{"", "", ""};
 				
 					
@@ -277,7 +291,7 @@ namespace namaichi.rec
 				
 				var userId = util.getRegGroup(res, "\"user\"\\:\\{\"user_id\"\\:(.+?),");
 				var isPremium = res.IndexOf("\"member_status\":\"premium\"") > -1;
-				var wsr = new WebSocketRecorder(webSocketRecInfo, container, recFolderFile, rm, rfu, this, openTime, lastSegmentNo, isTimeShift, lvid, timeShiftConfig, userId, isPremium, programTime, type, _openTime, isSub, isRtmp);
+				var wsr = new WebSocketRecorder(webSocketRecInfo, container, recFolderFile, rm, rfu, this, openTime, lastSegmentNo, isTimeShift, lvid, timeShiftConfig, userId, isPremium, programTime, type, _openTime, isSub, isRtmp, latency);
 				rm.wsr = wsr;
 				try {
 					isNoPermission = wsr.start(isRtmpOnlyPage);

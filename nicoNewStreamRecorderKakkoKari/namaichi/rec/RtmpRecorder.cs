@@ -26,10 +26,10 @@ namespace namaichi.rec
 	/// </summary>
 	public class RtmpRecorder
 	{
-		private string getPlayerStatusRes;
+		//private string getPlayerStatusRes;
 		private string lvid;
 		private CookieContainer container;
-		private config.config cfg;
+//		/private config.config cfg;
 		private RecordingManager rm;
 		private RecordFromUrl rfu;
 		private string recFolderFile;
@@ -53,8 +53,10 @@ namespace namaichi.rec
 		private int tsRecordNum = 0;
 		
 		private string rtmpUrl;
-		private string que;
+		//private string que;
 		private string ticket;
+		
+		public List<string> fileNameList = null;
 		
 		public RtmpRecorder(string lvid, CookieContainer container, 
 				RecordingManager rm, RecordFromUrl rfu, bool isSub,
@@ -72,7 +74,8 @@ namespace namaichi.rec
 			rm.isTitleBarInfo = bool.Parse(rm.cfg.get("IstitlebarInfo"));
 			afterConvertMode = int.Parse(rm.cfg.get("afterConvertMode"));
 		}
-		public void record() {
+		public void record(string rtmp2Url, string quality) {
+
 			//endcode 0-その他の理由 1-stop 2-最初に終了 3-始まった後に番組終了
 			util.debugWriteLine("rtmp recorder" + util.getMainSubStr(isSub, true));
 			var _m = (rm.isPlayOnlyMode) ? "視聴" : "録画";
@@ -82,127 +85,171 @@ namespace namaichi.rec
 				if (isSub) {
 					rm.form.addLogText(_m + "をスタンバイします(サブ)");
 				} else
-					rm.form.addLogText(_m + "を開始します(メイン)");
+					rm.form.addLogText(_m + "を開始します(" + (quality == null ? "" : ("画質:" + quality + " ")) + "メイン)");
 			}
+			if (rtmp2Url != null) rtmpUrl = rtmp2Url;
 			
 			var convertList = new List<string>();
 			var isFirst = true;
-			while (rm.rfu == rfu && retryMode == 0) {
-				if (DateTime.Now < lastConnectTime + TimeSpan.FromSeconds(3)) {
-					Thread.Sleep(500);
-					continue;
-				}
-				lastConnectTime = DateTime.Now;
-				
-				var rtmpdumpArg = getRtmpDumpArgs();
-				if (rtmpdumpArg == "end") {
-					isEndProgram = true;
-					break;
-				} else if (rtmpdumpArg == "no") {
-					rm.form.addLogText("データが見つかりませんでした");
-					return;
-				}
-				if (rtmpdumpArg == null) continue;
-				
-				if (rm.isPlayOnlyMode) {
-					while(rm.rfu == rfu && retryMode == 0) {
-						Thread.Sleep(1000);
-					}
-					return;
-				}
-				
-				
-				
-				if (!rm.isPlayOnlyMode)
-					getProcess(out rtmpdumpP, out ffmpegP, rtmpdumpArg);
-				
-				if (!isSub) {
-					//if (!isFirst && !rm.isPlayOnlyMode) wr.resetCommentFile();
-					isFirst = false;
+			var isFailedRec = false;
+			try {
+				//var sleepSec = 1;
+				while (rm.rfu == rfu && retryMode == 0) {
+					util.debugWriteLine("rtmp　録画" + ((isFirst) ? "開始" : "再開"));
 					
-					Task.Run(() => errorReadProcess(rtmpdumpP));
-					
-					while(rm.rfu == rfu && retryMode == 0 && !rtmpdumpP.HasExited) {
-						if (!rm.isPlayOnlyMode && rtmpdumpP.WaitForExit(300)) break;
-						if (rm.isPlayOnlyMode) Thread.Sleep(1000);
-					}
-					util.debugWriteLine("rtmp Process loop end");
-					
-					if (rm.rfu != rfu || retryMode == 1) {
-						util.debugWriteLine("retrymode " + retryMode);
-						stopRecording();
-					} else {
-						//end program
-						while (rm.rfu == rfu && !rtmpdumpP.HasExited) {
-							Thread.Sleep(500);
-						}
-					}
-					try {
-						var f = new FileInfo(util.getOkSJisOut(recFolderFile) + ".flv");
-						if (f != null && f.Exists && f.Length == 0) 
-							File.Delete(f.FullName + ".flv");
-						else {
-//							if (rm.cfg.get("IsAfterRenketuFFmpeg") == "true" ||
-//							   		(afterConvertMode != "0" && afterConvertMode != "4")) {
-							//if (afterConvertMode > 0) {
-							//	convertList.Add(recFolderFile + ".flv");
-							//}
-							//recFolderFile = wr.getRecFilePath()[1];
-						}
-					} catch (Exception e) {
-						util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
-						
-					}
-					
-					if (rm.rfu != rfu || retryMode != 0) break;
-					
-				} else {
-					var rtmpdumpTask = 
-							Task.Run(() => rtmpdumpReadFFmpegWriteProcess(rtmpdumpP, ffmpegP));
-//					var ffmpegTask = Task.Run(() => ffmpegReadProcess(rtmpdumpP));
-					
-					var isContinue = false;
-					while (rm.rfu == rfu && retryMode == 0 && !rtmpdumpP.HasExited) {
-//						if (taskEnd(rtmpdumpTask) && taskEnd(ffmpegTask)) {
-						if (taskEnd(rtmpdumpTask)) {
-							isContinue = true;
-						    break;
-						}
-//						if (taskEnd(rtmpdumpTask) || taskEnd(ffmpegTask)) {
-						if (taskEnd(rtmpdumpTask)) {
-//							stopRecording();
-//							break;
-						}
-						
-						
-						Thread.Sleep(500);
-					}
-					util.debugWriteLine("rtmp rec end isContinue " + isContinue + "(サブ)");
-					if (isContinue || retryMode == 0) {
-						Thread.Sleep(1000);
+					if (DateTime.Now < lastConnectTime + TimeSpan.FromSeconds(5)) {
+						//Thread.Sleep(sleepSec * 10000);
+						Thread.Sleep(5000);
+						//if (sleepSec < 6) sleepSec++;
 						continue;
 					}
+					lastConnectTime = DateTime.Now;
 					
-					util.debugWriteLine("rtmp rec go retryMode " + retryMode + "(サブ)");
-					if (rm.rfu != rfu || retryMode == 1) {
-						stopRecording();
+					var rtmpdumpArg = getProcessArgs(rtmp2Url != null, isFirst);
+					if (rtmpdumpArg == "end") {
+						isEndProgram = true;
+						break;
+					} else if (rtmpdumpArg == "no") {
+						rm.form.addLogText("RTMPデータが見つかりませんでした");
+						return;
 					}
-					if (retryMode == 2) {
-						//end program
-						util.debugWriteLine("rtmp endprogram retryMode " + retryMode);
-						while (rm.rfu == rfu) {
-							if ((rtmpdumpP == null || rtmpdumpP.HasExited) && (ffmpegP == null || ffmpegP.HasExited)) break;
-							Thread.Sleep(500);
+					if (rtmpdumpArg == null) continue;
+					
+					if (rm.isPlayOnlyMode) {
+						while(rm.rfu == rfu && retryMode == 0) {
+							Thread.Sleep(1000);
 						}
+						return;
 					}
-					util.debugWriteLine("rtmp rec end");
-					if (rm.rfu != rfu || retryMode != 0) break;
+					
+					if (isTimeshift) {
+						timeshiftRecord(rtmpdumpArg);
+						return;
+					}
+					
+					if (!rm.isPlayOnlyMode)
+						getProcess(out rtmpdumpP, out ffmpegP, rtmpdumpArg);
+					
+					if (!isSub) {
+						//if (!isFirst && !rm.isPlayOnlyMode && !isFailedRec) wr.resetCommentFile();
+						isFirst = false;
+						isFailedRec = false;
+						
+						Task.Run(() => errorReadProcess(rtmpdumpP));
+						
+						testDebugWriteLine("rtmpdump　待機");
+						while(rm.rfu == rfu && retryMode == 0 && !rtmpdumpP.HasExited) {
+							if (!rm.isPlayOnlyMode && rtmpdumpP.WaitForExit(1000)) break;
+							if (rm.isPlayOnlyMode) Thread.Sleep(1000);
+						}
+						testDebugWriteLine("rtmpdump　終了準備　" + retryMode);
+						
+						util.debugWriteLine("rtmp Process loop end");
+						
+						if (rm.rfu != rfu || retryMode == 1) {
+							util.debugWriteLine("retrymode " + retryMode);
+							stopRecording();
+						} else {
+							//end program
+							while (rm.rfu == rfu && !rtmpdumpP.HasExited) {
+								Thread.Sleep(1000);
+							}
+						}
+						testDebugWriteLine("rtmpdump　終了");
+						
+						
+						try {
+							var f = new FileInfo(util.getOkSJisOut(recFolderFile) + ".flv");
+							if (f != null && f.Exists && f.Length == 0) {
+								util.debugWriteLine("rtmp delete " + recFolderFile);
+								//File.Delete(f.FullName + ".flv");
+								File.Delete(f.FullName + "");
+								f = new FileInfo(util.getOkSJisOut(recFolderFile) + ".xml");
+								if (f != null && f.Exists)
+								    File.Delete(f.FullName);
+								
+								isFailedRec = true;
+							} else {
+	//							if (rm.cfg.get("IsAfterRenketuFFmpeg") == "true" ||
+	//							   		(afterConvertMode != "0" && afterConvertMode != "4")) {
+								if (afterConvertMode > 0) {
+									convertList.Add(recFolderFile + ".flv");
+								}
+								//recFolderFile = wr.getRecFilePath()[1];
+							}
+						} catch (Exception e) {
+							util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+							
+						}
+						
+						if (rm.rfu != rfu || retryMode != 0) break;
+						wr.reConnect();
+						
+					} else {
+						var rtmpdumpTask = 
+								Task.Run(() => rtmpdumpReadFFmpegWriteProcess(rtmpdumpP, ffmpegP));
+	//					var ffmpegTask = Task.Run(() => ffmpegReadProcess(rtmpdumpP));
+						
+						var isContinue = false;
+						while (rm.rfu == rfu && retryMode == 0 && !rtmpdumpP.HasExited) {
+	//						if (taskEnd(rtmpdumpTask) && taskEnd(ffmpegTask)) {
+							if (taskEnd(rtmpdumpTask)) {
+								isContinue = true;
+							    break;
+							}
+	//						if (taskEnd(rtmpdumpTask) || taskEnd(ffmpegTask)) {
+							if (taskEnd(rtmpdumpTask)) {
+	//							stopRecording();
+	//							break;
+							}
+							
+							
+							Thread.Sleep(1000);
+						}
+						util.debugWriteLine("rtmp rec end isContinue " + isContinue + "(サブ)");
+						if (isContinue || retryMode == 0) {
+							Thread.Sleep(1000);
+							continue;
+						}
+						
+						util.debugWriteLine("rtmp rec go retryMode " + retryMode + "(サブ)");
+						if (rm.rfu != rfu || retryMode == 1) {
+							stopRecording();
+						}
+						if (retryMode == 2) {
+							//end program
+							util.debugWriteLine("rtmp endprogram retryMode " + retryMode);
+							while (rm.rfu == rfu) {
+								if ((rtmpdumpP == null || rtmpdumpP.HasExited) && (ffmpegP == null || ffmpegP.HasExited)) break;
+								Thread.Sleep(1000);
+							}
+						}
+						util.debugWriteLine("rtmp rec end");
+						if (rm.rfu != rfu || retryMode != 0) break;
+					}
 				}
+			} catch (Exception e) {
+				util.debugWriteLine("rtmp total error " + e.Message + e.Source + e.StackTrace + e.TargetSite);
+				testDebugWriteLine("rtmpエラー " + e.Message + e.Source + e.StackTrace + e.TargetSite);
 			}
+			testDebugWriteLine("rtmp録画終了");
+			
 			
 		}
-		private string getRtmpDumpArgs() {
-			var url = "http://live.nicovideo.jp/api/getplayerstatus/" + lvid;
+		private string getProcessArgs(bool isRtmp2, bool isFirst) {
+			testDebugWriteLine("getProcessArgs");
+			if (isRtmp2) {
+				var ret = "-vr " + rtmpUrl + " ";
+				rm.hlsUrl = ret;
+				ret += "-o \"" + util.getOkSJisOut(recFolderFile) + ".flv\"";
+				util.debugWriteLine("getProcessArgs rtmp2Url exist " + ret);
+				if (!isFirst && ((WebSocketRecorder)wr).isEndedProgram())
+					return "end";
+				
+				return ret;
+			}
+			
+			var url = "https://live.nicovideo.jp/api/getplayerstatus/" + lvid;
 			while (rm.rfu == rfu && retryMode == 0
 			      ) {
 				var res = util.getPageSource(url, container, null, false, 3000);
@@ -210,23 +257,30 @@ namespace namaichi.rec
 				if (res == null) {
 					Task.Run(() => isEndedProgram());
 					Thread.Sleep(3000);
+					testDebugWriteLine("getplayerstatus取得失敗");
 					continue;
 				}
 				if (res.IndexOf("<code>notlogin</code>") > -1) {
+					/*
 					var c = new CookieGetter(rm.cfg);
-					var t = c.getHtml5RecordCookie(rfu.url, isSub);
+					var t = c.getHtml5RecordCookie(rfu.url);
 					t.Wait();
 					if (t.Result != null && t.Result[0] != null)
 						container = t.Result[0];
+					testDebugWriteLine("getplayerstatus not login");
+					*/
 					continue;
 				}
 				var pageType = util.getPageTypeRtmp(res, ref isTimeshift, isSub);
+				testDebugWriteLine("getplayerstatus　取得 " + pageType);
 				if (pageType == 1) {
 					Thread.Sleep(90000);
 					continue;
 				}
 				if (!wr.isTimeShift && (pageType == 7 || pageType == 2)) {
 					retryMode = 2;
+					//test
+					rm.form.addLogText(pageType + " " + res);
 					return "end";
 				}
 				if (pageType == 2 || pageType == 3) {
@@ -243,8 +297,18 @@ namespace namaichi.rec
 				var type = util.getRegGroup(res, "<provider_type>(.+?)</provider_type>");
 //				string rtmpurl = null, ticket = null;
 				getTicketUrl(out rtmpUrl, out ticket);
+				if (ticket == null) {
+					Thread.Sleep(3000);
+					continue;
+				}
 				 
 				var arg = getArgFromRes(xml, pageType, type, ticket, rtmpUrl);
+				if (arg.IndexOf("?invalid") > -1) {
+					Thread.Sleep(60000);
+					continue;
+				}
+				
+				testDebugWriteLine("rtmpdump 引数取得 " + ((arg==null) ? "失敗" : "成功"));
 				if (arg == null) continue;
 				return arg;
 			}
@@ -253,9 +317,14 @@ namespace namaichi.rec
 			return null;
 		}
 		private void getTicketUrl(out string url, out string ticket) {
-			var edgeurl = "http://watch.live.nicovideo.jp/api/getedgestatus?v=" + lvid;
+			var edgeurl = "https://watch.live.nicovideo.jp/api/getedgestatus?v=" + lvid;
 //			util.debugWriteLine(container.GetCookieHeader(new Uri(edgeurl)));
 			var res = util.getPageSource(edgeurl, container, null, false, 5000);
+			if (res == null) {
+				url = null;
+				ticket = null;
+				return;
+			}
 			url = util.getRegGroup(res, "<url>(.+?)</url>");
 			ticket = util.getRegGroup(res, "<ticket>(.+?)</ticket>");
 //			int i = 0;
@@ -339,20 +408,32 @@ namespace namaichi.rec
 					var publishList = getPublishList(que, play);
 					if (publishList.Count == 0) return "no";
 					
+					//var quePosTimeList = getQuePosTimeList(que, play);
+					//var startRecVpos =　(int.Parse(xml.SelectSingleNode("/getplayerstatus/stream/open_time").InnerText) -
+					//                    int.Parse(xml.SelectSingleNode("/getplayerstatus/stream/start_time").InnerText)) * 100;
+					
 					var arg = "";
-					foreach (var a in publishList) {
+					for (var i = 0; i < publishList.Count; i++) {
+						var a = publishList[i];
 //						string _out = (arg == "") ? util.getOkSJisOut(recFolderFile[1]) : wr.getRecFilePath(0)[1];
 						if (arg != "") arg += "$";
 						var app = util.getRegGroup(rtmpUrl, "(fileorigin.+)");
-						arg += "-r " + rtmpUrl + " -y mp4:" + a + " -a " + app + " -p http://live.nicovideo.jp/watch/" + lvid + " -s \"http://live.nicovideo.jp/nicoliveplayer.swf\" -f \"WIN 29,0,0,113\" -t " + rtmpUrl + " -C S:" + ticket + " -o ";
+						//var _a = (true && quePosTimeList[i] < startRecVpos) ? "" : (" -A " + (startRecVpos - quePosTimeList[i]));
+						var _a = "";
+						
+						var _y = a.IndexOf(".flv") > -1 ? "/mp4:" : " -y mp4:";
+						//_y = " -y mp4:";
+						
+						arg += "-r " + rtmpUrl + _y + a + " -a " + app + " -p http://live.nicovideo.jp/watch/" + lvid + " -s \"http://live.nicovideo.jp/nicoliveplayer.swf\" -f \"WIN 29,0,0,113\" -t " + rtmpUrl + " -C S:" + ticket + _a + " -m 200 -o ";
 						//arg += "-r " + url + " -y mp4:" + a + " -C S:" + ticket + " -o ";
+						 
 					}
 					rm.hlsUrl = "timeshift";
-					//rm.hlsUrl = arg;
 					util.debugWriteLine(arg + util.getMainSubStr(isSub, true));
 					return arg;
 					
 				} else {
+					
 					/*
 					var _url = xml.SelectSingleNode("/getplayerstatus/rtmp/url");
 					var __url = (_url == null) ? null : _url.InnerText;
@@ -408,6 +489,15 @@ namespace namaichi.rec
 				var qi = q.InnerText;
 				if (qi.StartsWith("/publish " + play))
 					l.Add(util.getRegGroup(qi, "/publish " + play + " (.+)"));
+			}
+			return l;
+		}
+		private List<int> getQuePosTimeList(XmlNode que, string play) {
+			var l = new List<int>();
+			foreach (XmlNode q in que.ChildNodes) {
+				var qi = q.InnerText;
+				if (qi.StartsWith("/publish " + play))
+					l.Add(int.Parse(q.Attributes["vpos"].Value));
 			}
 			return l;
 		}
@@ -581,10 +671,14 @@ namespace namaichi.rec
 			*/
 		}
 		private void getProcess(out Process rtmpdumpP, out Process ffmpegP, string rtmpdumpArg) {
+			testDebugWriteLine("rtmpdump起動");
+			
+			System.IO.Directory.SetCurrentDirectory(util.getJarPath()[0]);
 			rtmpdumpP = ffmpegP = null;
 			rtmpdumpP = new Process();
 			var si = new ProcessStartInfo();
-			si.FileName = "rtmpdump.exe";
+			si.FileName = (bool.Parse(rm.cfg.get("IsDefaultRtmpPath"))) ? 
+				"rtmpdump.exe" : rm.cfg.get("rtmpPath");
 			si.Arguments = rtmpdumpArg;
 			si.UseShellExecute = false;
 			si.CreateNoWindow = true;
@@ -631,8 +725,8 @@ namespace namaichi.rec
 //					Debug.WriteLine("rtmpdump " + i);
 //					if (rm.isPlayOnlyMode) continue;
 					
-					if (i == null || i == 0) {
-						util.debugWriteLine("rtmpdump read i " + ((i == null) ? "null" : " get 0"));
+					if (i == 0) {
+						util.debugWriteLine("rtmpdump read i " + (" get 0"));
 					}
 					
 					var bb = b.CloneRange(0, i);
@@ -688,28 +782,49 @@ namespace namaichi.rec
 		}
 		private void errorReadProcess(Process p) {
 			Debug.WriteLine("error read start");
+			testDebugWriteLine("rtmpdump読み取り開始");
+			
 			var isRecordLive = p.StartInfo.Arguments.StartsWith("-vr");
 			
+			string receivedData = null, lastReceivedData = null;
+			Task.Run(() => {
+				try {
+					while (!p.HasExited) {
+			         	Thread.Sleep(200000);
+			         	if (receivedData == lastReceivedData) {
+			         		_stopRecording(p);
+			         		break;
+			         	}
+			         	lastReceivedData = receivedData;
+					}
+	         	} catch (Exception e) {
+					util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+	         	}
+			});
 			StreamReader _os;
 			try {
 				_os = p.StandardError;
 			} catch (Exception e) {
 				util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+				testDebugWriteLine("rtmpdump読み取りできませんでした");
 				return;
 			}
 			while (!p.HasExited) {
 				try {
 					var i = _os.ReadLine();
-					if (i == null) break;
 //					if (i.Length == 0) break;
+					if (i == null || i.Length == 0) continue;
 					var isState = i.Length > 3 && 
 							(i.Substring(i.Length - 2) == "%)" ||
 							i.Substring(i.Length - 3) == "sec");
-					if (isState) {
-						//rm.form.setRecordState(i + ((isRecordLive) ? "" : ("(" + (tsRecordIndex + 1) + "/" + tsRecordNum + ")")));
-					} else {
-//						rm.form.addLogText(i);
-					}
+					//if (isState) {
+					//	rm.form.setRecordState(i + ((isRecordLive) ? "" : ("(" + (tsRecordIndex + 1) + "/" + tsRecordNum + ")")));
+					//} else rm.form.addLogText(i);
+					
+					receivedData = i;
+					//if (i.IndexOf("Download complete") > -1) {
+					//	rm.form.setRecordStateComplete();
+					//}
 					
 					//ts nasi
 //					if (i.IndexOf("Starting download at: 0.000 kB") > -1) 
@@ -719,17 +834,75 @@ namespace namaichi.rec
 				}
 			}
 			Debug.WriteLine("error read end");
+			testDebugWriteLine("rtmpdump読み取り終了");
 		}
-		
+		private void timeshiftRecord(string rtmpdumpArg) {
+//			Process rtmpdumpP, ffmpegP;
+			var convertList = new List<string>();
+			var argList = rtmpdumpArg.Split('$');
+			tsRecordNum = argList.Length;
+			setFileNameList(argList.Length, recFolderFile);
+			try {
+				for (tsRecordIndex = 0; tsRecordIndex < argList.Length; tsRecordIndex++) {
+					if (rfu.tsRecNumArr != null && 
+					    	Array.IndexOf(rfu.tsRecNumArr, tsRecordIndex + 1) == -1) continue;
+					if (tsRecordIndex != 0) {
+						var _args = getProcessArgs(false, false);
+						if (_args != null) argList = _args.Split('$');
+						//recFolderFile = wr.getRecFilePath();
+						//recFolderFile = incrementRecFolderFile(recFolderFile);
+						
+					}
+					recFolderFile = getTsRecordIndexRecFolderFile(recFolderFile, tsRecordIndex + 1);
+					
+					
+					//var _arg = argList[tsRecordIndex] + "\"" + recFolderFile + ".flv\"";
+					var _arg = argList[tsRecordIndex] + "\"" + fileNameList[tsRecordIndex] + ".flv\"";
+					
+					if (_arg.StartsWith("-r")) {
+						makeTs(_arg);
+					}
+					getProcess(out rtmpdumpP, out ffmpegP, _arg);
+					
+					Task.Run(() => errorReadProcess(rtmpdumpP));
+					
+					while(rm.rfu == rfu && !rtmpdumpP.HasExited) {
+						if (rtmpdumpP.WaitForExit(1000)) break;
+					}
+					util.debugWriteLine("rtmp Process loop end");
+					
+					if (rm.rfu != rfu) {
+						stopRecording();
+					}
+					try {
+//						if (rm.cfg.get("IsAfterRenketuFFmpeg") == "true" ||
+//						   		(afterConvertMode != "0" && afterConvertMode != "4")) {
+						if (afterConvertMode > 0) {
+							convertList.Add(recFolderFile + ".flv");
+						}
+					} catch (Exception e) {
+						util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+						
+					}
+					if (rm.rfu != rfu) break;
+				}
+			} catch (Exception ee) {
+				util.debugWriteLine(ee.Message + ee.Source + ee.StackTrace + ee.TargetSite);
+			}
+			
+			if (rm.rfu == rfu) isEndProgram = true;
+			util.debugWriteLine("timeshift rtmp record end");
+		}
 		private bool taskEnd(Task t) {
 			if (t == null) return true;
 			return (t.IsCanceled ||
 				t.IsCompleted || t.IsFaulted);
 		}
-		private void stopRecording() {
+		public void stopRecording() {
 			util.debugWriteLine("rtmp rec stop recording" + util.getMainSubStr(isSub, true));
 			_stopRecording(rtmpdumpP);
 			_stopRecording(ffmpegP);
+			//retryMode = 1;
 		}
 		private void _stopRecording(Process p) {
 			try {
@@ -762,6 +935,60 @@ namespace namaichi.rec
 			if (isEndProgram) retryMode = 2;
 			return isEndProgram;
 		}
-
+		private void makeTs(string _arg) {
+			util.debugWriteLine("make ts " + _arg);
+			var start = DateTime.Now;
+			var que = util.getRegGroup(_arg, "(/content.+?) ");
+			//while (rm.rfu == rfu && DateTime.Now - start < TimeSpan.FromSeconds(10)) {
+			while (rm.rfu == rfu) {
+				//var cl = new RtmpClient(rtmpUrl, que, ticket, rm);
+				//if (cl.makeTs()) break;
+				break;
+			}
+			Thread.Sleep(5000);
+			util.debugWriteLine("make ts end");
+		}
+		private string incrementRecFolderFile(string recFolderFile) {
+			/*
+			var r = new Regex("(\\d+)$");
+			var m = r.Match(recFolderFile);
+			if (m == null || m.Length <= 0) return wr.getRecFilePath()[1];
+			var _new = (int.Parse(m.Groups[1].Value) + 1).ToString();
+			return r.Replace(recFolderFile, _new);
+//			return recFolderFile.Replace(m.Groups[0].Value, _new);
+			*/
+			return null;
+		}
+		private string getTsRecordIndexRecFolderFile(string recFolderFile, int recordIndex) {
+			var r = new Regex("(\\d+(\\(\\d+\\))*)$");
+			var m = r.Match(recFolderFile);
+			//if (m == null || m.Length <= 0) 
+			//	return wr.getRecFilePath()[1];
+			//var _new = (int.Parse(m.Groups[1].Value) + 1).ToString();
+			var num = m.Groups[1].ToString();
+			var _new = recordIndex.ToString();
+			
+			var baseName = r.Replace(recFolderFile, _new);
+			for (var i = 0; i < 10000; i++) {
+				var name = baseName;
+				if (i != 0) name += "(" + i + ")"; 
+				if (!File.Exists(name + ".flv"))
+					return name;
+			}
+			//return wr.getRecFilePath()[1];
+			return null;
+		}
+		private void testDebugWriteLine(string s) {
+			util.debugWriteLine("rtmp debug " + s);
+			#if DEBUG
+				//rm.form.addLogText(s);	
+			#endif
+		}
+		private void setFileNameList(int listNum, string recFolderFile) {
+		}
+		public void resetRtmpUrl(string url) {
+			rtmpUrl = url;
+			rm.hlsUrl = "-vr " + url;
+		}
 	}
 }

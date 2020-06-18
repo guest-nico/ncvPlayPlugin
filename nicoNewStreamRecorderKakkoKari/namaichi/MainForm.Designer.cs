@@ -55,15 +55,16 @@ namespace namaichi
 			this.label12 = new System.Windows.Forms.Label();
 			this.playerBtn = new System.Windows.Forms.Button();
 			this.logText = new System.Windows.Forms.TextBox();
+			this.latencyList = new System.Windows.Forms.ComboBox();
 			this.menuStrip1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// qualityBox
 			// 
-			this.qualityBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+			this.qualityBox.Anchor = System.Windows.Forms.AnchorStyles.Top;
 			this.qualityBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
 			this.qualityBox.FormattingEnabled = true;
-			this.qualityBox.Location = new System.Drawing.Point(385, 38);
+			this.qualityBox.Location = new System.Drawing.Point(329, 38);
 			this.qualityBox.Name = "qualityBox";
 			this.qualityBox.Size = new System.Drawing.Size(79, 20);
 			this.qualityBox.TabIndex = 19;
@@ -71,12 +72,10 @@ namespace namaichi
 			// 
 			// urlText
 			// 
-			this.urlText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-									| System.Windows.Forms.AnchorStyles.Right)));
 			this.urlText.Location = new System.Drawing.Point(69, 38);
 			this.urlText.Margin = new System.Windows.Forms.Padding(2);
 			this.urlText.Name = "urlText";
-			this.urlText.Size = new System.Drawing.Size(241, 19);
+			this.urlText.Size = new System.Drawing.Size(180, 19);
 			this.urlText.TabIndex = 0;
 			// 
 			// recBtn
@@ -110,7 +109,7 @@ namespace namaichi
 			this.menuStrip1.Location = new System.Drawing.Point(0, 0);
 			this.menuStrip1.Name = "menuStrip1";
 			this.menuStrip1.Padding = new System.Windows.Forms.Padding(4, 2, 0, 2);
-			this.menuStrip1.Size = new System.Drawing.Size(476, 26);
+			this.menuStrip1.Size = new System.Drawing.Size(470, 26);
 			this.menuStrip1.TabIndex = 11;
 			this.menuStrip1.Text = "menuStrip1";
 			// 
@@ -196,8 +195,8 @@ namespace namaichi
 			// 
 			// playerBtn
 			// 
-			this.playerBtn.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-			this.playerBtn.Location = new System.Drawing.Point(314, 35);
+			this.playerBtn.Anchor = System.Windows.Forms.AnchorStyles.Top;
+			this.playerBtn.Location = new System.Drawing.Point(259, 35);
 			this.playerBtn.Name = "playerBtn";
 			this.playerBtn.Size = new System.Drawing.Size(64, 24);
 			this.playerBtn.TabIndex = 1;
@@ -207,17 +206,32 @@ namespace namaichi
 			// 
 			// logText
 			// 
-			this.logText.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-									| System.Windows.Forms.AnchorStyles.Left) 
-									| System.Windows.Forms.AnchorStyles.Right)));
+			this.logText.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+									| System.Windows.Forms.AnchorStyles.Left)));
 			this.logText.Location = new System.Drawing.Point(6, 71);
 			this.logText.Margin = new System.Windows.Forms.Padding(2);
 			this.logText.Multiline = true;
 			this.logText.Name = "logText";
 			this.logText.ScrollBars = System.Windows.Forms.ScrollBars.Vertical;
-			this.logText.Size = new System.Drawing.Size(459, 81);
+			this.logText.Size = new System.Drawing.Size(453, 81);
 			this.logText.TabIndex = 5;
 			this.logText.TabStop = false;
+			// 
+			// latencyList
+			// 
+			this.latencyList.Anchor = System.Windows.Forms.AnchorStyles.Top;
+			this.latencyList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.latencyList.FormattingEnabled = true;
+			this.latencyList.Items.AddRange(new object[] {
+									"0.5",
+									"1.0",
+									"1.5",
+									"3.0"});
+			this.latencyList.Location = new System.Drawing.Point(414, 38);
+			this.latencyList.Name = "latencyList";
+			this.latencyList.Size = new System.Drawing.Size(45, 20);
+			this.latencyList.TabIndex = 19;
+			this.latencyList.TextChanged += new System.EventHandler(this.latencyTextUpdate);
 			// 
 			// MainForm
 			// 
@@ -225,7 +239,8 @@ namespace namaichi
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
 			this.BackColor = System.Drawing.SystemColors.Window;
-			this.ClientSize = new System.Drawing.Size(476, 163);
+			this.ClientSize = new System.Drawing.Size(470, 163);
+			this.Controls.Add(this.latencyList);
 			this.Controls.Add(this.qualityBox);
 			this.Controls.Add(this.playerBtn);
 			this.Controls.Add(this.label12);
@@ -247,6 +262,7 @@ namespace namaichi
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		public System.Windows.Forms.ComboBox latencyList;
 		private System.Windows.Forms.ToolStripMenuItem characterColorMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem formColorMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem visualMenuItem;

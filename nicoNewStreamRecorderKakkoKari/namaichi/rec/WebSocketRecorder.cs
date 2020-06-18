@@ -96,6 +96,7 @@ namespace namaichi.rec
 		//private XmlCommentGetter_ontime xcg = null;
 		//private TimeShiftCommentGetter_xml tscgx = null;
 		private string selectQuality = null;
+		private string selectLatency = null;
 		
 		public WebSocketRecorder(string[] webSocketInfo, 
 				CookieContainer container, string[] recFolderFile, 
@@ -104,7 +105,8 @@ namespace namaichi.rec
 				int lastSegmentNo, bool isTimeShift, string lvid, 
 				TimeShiftConfig tsConfig, string userId, 
 				bool isPremium, TimeSpan programTime, 
-				string programType, long _openTime, bool isSub, bool isRtmp
+				string programType, long _openTime, bool isSub, bool isRtmp,
+				string latency
 			)
 		{
 			this.webSocketInfo = webSocketInfo;
@@ -131,6 +133,7 @@ namespace namaichi.rec
 			this.isGetComment = rm.cfg.get("IsgetComment");
 			this.isGetCommentXml = rm.cfg.get("IsgetcommentXml");
 			this.engineMode = rm.cfg.get("EngineMode");
+			selectLatency = latency;
 		}
 		public bool start(bool isRtmpOnlyPage) {
 			addDebugBuf("ws rec start");
@@ -143,7 +146,7 @@ namespace namaichi.rec
 				Task.Run(() => {
 					rr = new RtmpRecorder(lvid, container, rm, rfu, !isRtmp, recFolderFile, this, openTime);
 					Task.Run(() => {
-						rr.record();
+						rr.record(null, null);
 						rm.hlsUrl = "end";
 						if (rr.isEndProgram) isEndProgram = true;
 						isRetry = false;
@@ -334,7 +337,7 @@ namespace namaichi.rec
 			//ws.Send(leoReq);
 			
 			
-			ws.Send(webSocketInfo[1]);
+			sendMessage(ws, webSocketInfo[1]);
 			
 			
 			/*
@@ -420,26 +423,39 @@ namespace namaichi.rec
 				}
 //				if (engineMode == "3") return;
 				
-				var bestGettableQuolity = getBestGettableQuolity(e.Message);
+				string[] gettableList = null;
+				var bestGettableQuolity = getBestGettableQuolity(e.Message, out gettableList);
 				var currentQuality = util.getRegGroup(e.Message, "\"quality\":\"(.+?)\"");
-				var gettableList = util.getRegGroup(e.Message, "\"availableQualities\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',');
+				//var gettableList = util.getRegGroup(e.Message, "\"availableQualities\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',');
 				
 				int listCount = 0;
 				string listText = "";
 				rm.form.getQualityListInfo(out listCount, out listText);
 				
-				if (listText == "" ||
-				    	Array.IndexOf(gettableList, listText) == -1) {
-					if (isFirstChoiceQuality(currentQuality, bestGettableQuolity)) {
-						rm.form.setQualityList(getQualityList(e.Message), currentQuality);
-						record(e.Message, currentQuality);
-					} else sendUseableStreamGetCommand(bestGettableQuolity);
-				} else {
-					if (currentQuality == listText) {
-						record(e.Message, currentQuality);
-					} else sendUseableStreamGetCommand(listText);
+				if (!(isRtmp && isTimeShift)) {
+					if (listText == "" ||
+					    	Array.IndexOf(gettableList, listText) == -1) {
+						if (isFirstChoiceQuality(currentQuality, bestGettableQuolity)) {
+							rm.form.setQualityList(gettableList, currentQuality);
+							if (isRtmp) {
+								rtmpRecord(e.Message, currentQuality);
+							} else {
+								record(e.Message, currentQuality);
+							}
+						} else 
+							sendUseableStreamGetCommand(bestGettableQuolity);
+					} else {
+						if (currentQuality == listText) {
+							
+							if (isRtmp) {
+								rtmpRecord(e.Message, currentQuality);
+							} else {
+								record(e.Message, currentQuality);
+							}
+						} else 
+							sendUseableStreamGetCommand(listText);
+					}
 				}
-					
 				
 			}
 			
@@ -451,21 +467,21 @@ namespace namaichi.rec
 			    || e.Message.IndexOf("\"TOO_MANY_CONNECTIONS\"") >= 0
 			    || e.Message.IndexOf("\"TEMPORARILY_CROWDED\"") >= 0
 			    || e.Message.IndexOf("\"CROWDED\"") >= 0
-			   	|| e.Message.IndexOf("\"CONNECT_ERROR\"") >= 0) {
+			   	|| e.Message.IndexOf("\"CONNECT_ERROR\"") >= 0
+			   	|| e.Message.IndexOf("\"NO_STREAM_AVAILABLE\"") > -1) {
 				if (e.Message.IndexOf("\"TAKEOVER\"") >= 0 && !isRtmp) rm.form.addLogText("追い出されました。");
 				
 				//SERVICE_TEMPORARILY_UNAVAILABLE 予約枠開始後に何らかの問題？
 				if (e.Message.IndexOf("\"SERVICE_TEMPORARILY_UNAVAILABLE\"") > 0 && !isRtmp) 
 					rm.form.addLogText("サーバーからデータの受信ができませんでした。リトライします。");
 				
-				if (e.Message.IndexOf("\"END_PROGRAM\"") > 0) {
+				if (e.Message.IndexOf("\"END_PROGRAM\"") > 0 || e.Message.IndexOf("\"NO_STREAM_AVAILABLE\"") > -1) {
 					isEndProgram = true;
 					isRetry = false;
 					if (rr != null) rr.retryMode = 2;
 					//if (tscg != null) tscg.setIsRetry(false);
 				}
 				
-				addDebugBuf("kiteru");
 //				connect(webSocketInfo[0].Replace("\"requireNewStream\":false", "\"requireNewStream\":true"));
 				isNoPermission = true;
 				if (e.Message.IndexOf("\"TEMPORARILY_CROWDED\"") >= 0 ||
@@ -561,6 +577,7 @@ namespace namaichi.rec
 			if (type == "postkey") {
 				
 			}
+			                      
 		}
 		private void sendPong() {
 	    	try {
@@ -668,12 +685,12 @@ namespace namaichi.rec
 			return currentQuality == bestGettableQuolity; 
 			
 		}
-		private string getBestGettableQuolity(string msg) {
+		private string getBestGettableQuolity(string msg, out string[] gettableList) {
 			var qualityList = new List<string>{//"abr",
 				"super_high", "high",
 				"normal", "low", "super_low"};
 			
-			var gettableList = webSocketInfo[2] == "1" ? 
+			gettableList = webSocketInfo[2] == "1" ? 
 					util.getRegGroup(msg, "\"qualityTypes\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',')
 					: util.getRegGroup(msg, "\"availableQualities\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',');
 			var ranks = (rm.ri == null) ? (qualityRank.Split(',')) :
@@ -691,13 +708,19 @@ namespace namaichi.rec
 			return bestGettableQuality;
 		}
 		private void sendUseableStreamGetCommand(string bestGettableQuolity) {
+			util.debugWriteLine("sendUseableStream " + bestGettableQuolity);
 			var req = "";
 			
 			if (webSocketInfo[2] == "1") {
 				req = (isRtmp) ?
 						("{\"type\":\"watch\",\"body\":{\"command\":\"getstream\",\"requirement\":{\"protocol\":\"rtmp\",\"quality\":\"" + bestGettableQuolity + "\"}}}")
 						: ("{\"type\":\"watch\",\"body\":{\"command\":\"getstream\",\"requirement\":{\"protocol\":\"hls\",\"quality\":\"" + bestGettableQuolity + "\",\"isLowLatency\":false}}}");
-			} else req = "{\"type\":\"changeStream\",\"data\":{\"quality\":\"" + bestGettableQuolity + "\",\"protocol\":\"hls\",\"latency\":\"high\",\"chasePlay\":false}}";
+			} else {
+				var latency = float.Parse(selectLatency) < 1.1 ? "low" : "high";
+				req = "{\"type\":\"changeStream\",\"data\":{\"quality\":\"" + bestGettableQuolity + "\",\"protocol\":\"hls\",\"latency\":\"" + latency + "\",\"chasePlay\":false}}";
+			}
+			
+				   
 			
 			sendMessage(ws, req);
 		}
@@ -719,7 +742,7 @@ namespace namaichi.rec
 				addDebugBuf("reconnect ws exception " + e.Message + e.Source + e.StackTrace + e.TargetSite);
 			}
 		}
-		private bool isEndedProgram() {
+		public bool isEndedProgram() {
 			var isPass = (DateTime.Now - lastEndProgramCheckTime < TimeSpan.FromSeconds(5));
 			addDebugBuf("ispass " + isPass + " lastendprogramchecktime " + lastEndProgramCheckTime);
 			if (isPass) return false;
@@ -737,7 +760,7 @@ namespace namaichi.rec
 				container = cgTask.Result[0];
 				res = util.getPageSource(h5r.url, container, null, false, 5000);
 				res = System.Web.HttpUtility.HtmlDecode(res);
-				var _webSocketInfo = h5r.getWebSocketInfo(res, isRtmp, rm.form);
+				var _webSocketInfo = h5r.getWebSocketInfo(res, isRtmp, rm.form, rm.form.getLatencyText());
 				isNoPermission = true;
 				addDebugBuf("isendprogram login websocketInfo " + webSocketInfo[0] + " " + webSocketInfo[1]);
 				if (_webSocketInfo[0] == null || _webSocketInfo[1] == null) {
@@ -793,7 +816,7 @@ namespace namaichi.rec
 				container = cgTask.Result[0];
 				var res = util.getPageSource(h5r.url, container, null, false, 5000);
 				res = System.Web.HttpUtility.HtmlDecode(res);
-				var _webSocketInfo = h5r.getWebSocketInfo(res, isRtmp, rm.form);
+				var _webSocketInfo = h5r.getWebSocketInfo(res, isRtmp, rm.form, rm.form.getLatencyText());
 				isNoPermission = true;
 				addDebugBuf("resetWebsocketInfo " + _webSocketInfo[0] + " " + _webSocketInfo[1]);
 				if (_webSocketInfo[0] == null || _webSocketInfo[1] == null) {
@@ -817,6 +840,47 @@ namespace namaichi.rec
 		private void sendMessage(WebSocket w, string s) {
 			util.debugWriteLine("ws send " + s);
 			w.Send(s);
+		}
+		private void rtmpRecord(string websocketMsg, string quality) {
+			string url = null;
+			if (websocketMsg != null) {
+				var _msg = util.getRegGroup(websocketMsg,  "\"currentStream\":{(.+?)}");
+				if (_msg == null) {
+					util.debugWriteLine("rtmpRecord _msg null");
+					return;
+				}
+				url = util.getRegGroup(_msg, "\"uri\":\"(.+?)\"") + "/" + util.getRegGroup(_msg, "\"name\":\"(.+?)\"");
+				util.debugWriteLine("rtmp url " + url);
+			}
+			
+			rfu.subGotNumTaskInfo = new List<numTaskInfo>();
+			if (rr != null) {
+				rr.resetRtmpUrl(url);
+			}
+			else {
+				rr = new RtmpRecorder(lvid, container, rm, rfu, !isRtmp, recFolderFile, this, openTime);
+				Task.Run(() => {
+					rr.record(url, quality);
+					rm.hlsUrl = "end";
+					if (rr.isEndProgram) {
+						isEndProgram = true;
+						//if (endTime == DateTime.MinValue)
+						//	endTime = DateTime.Now;
+					}
+					isRetry = false;
+				});
+			}
+		}
+		public override void setLatency(string l) {
+			addDebugBuf("set latency " + l);
+			if (l != null && selectLatency != l && !isRtmp) {
+				var latency = float.Parse(l);
+				var fid = latency % 1 == 0 ? "90" : "12";
+				webSocketInfo[0] = webSocketInfo[0].Substring(0, webSocketInfo[0].Length - 2) + fid;
+				webSocketInfo[1] = "{\"type\":\"startWatching\",\"data\":{\"stream\":{\"quality\":\"normal\",\"protocol\":\"hls\",\"latency\":\"" + (latency < 1.1 ? "low" : "high") + "\",\"chasePlay\":false},\"room\":{\"protocol\":\"webSocket\",\"commentable\":true},\"reconnect\":false}}";
+				ws.Close();
+			}
+			selectLatency = l;
 		}
 	}
 }

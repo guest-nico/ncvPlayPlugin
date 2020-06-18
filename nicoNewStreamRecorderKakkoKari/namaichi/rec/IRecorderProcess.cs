@@ -35,5 +35,6 @@ namespace namaichi.rec
 		//abstract public void sendComment(string s, bool is184);
 		//abstract public void resetCommentFile();
 		abstract public void setQuality(string q);
+		abstract public void setLatency(string l);
 	}
 }

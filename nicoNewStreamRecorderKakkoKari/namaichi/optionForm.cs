@@ -106,6 +106,7 @@ namespace namaichi
 				{"issecondlogin",useSecondLoginChkBox.Checked.ToString().ToLower()},
 				{"qualityRank",getQualityRank()},
 				{"EngineMode",getEngineMode()},
+				{"latency",latencyList.Text},
 				{"anotherPlayerPath",anotherPlayerPathText.Text},
 				
 				{"cookieFile",cookieFileText.Text},
@@ -196,6 +197,7 @@ namespace namaichi
 			anotherPlayerPathText.Text = cfg.get("anotherPlayerPath");
 //			isUsePlayerChkBox.Checked = bool.Parse(cfg.get("IsUsePlayer"));
 //			isUsePlayerChkBox_UpdateAction();
+			latencyList.Text = cfg.get("latency");
 			
         	isCookieFileSiteiChkBox.Checked = bool.Parse(cfg.get("iscookie"));
         	isCookieFileSiteiChkBox_UpdateAction();

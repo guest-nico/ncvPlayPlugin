@@ -22,8 +22,8 @@ class app {
 	}
 }
 class util {
-	public static string versionStr = "ver0.1.6";
-	public static string versionDayStr = "2020/06/03";
+	public static string versionStr = "ver0.1.7";
+	public static string versionDayStr = "2020/06/18";
 	public static bool isShowWindow = true;
 	public static bool isStdIO = false;
 	
@@ -712,8 +712,8 @@ class util {
 			else if (res.IndexOf("isFollowerOnly&quot;:true") > -1 && res.IndexOf("isFollowed&quot;:false") > -1) return 4;
 			else if (status == "ENDED" && res.IndexOf("rejectedReasons&quot;:[&quot;notHaveTimeshiftTicket") > -1) return 9;
 			else if (status == "ENDED" && res.IndexOf("rejectedReasons&quot;:[&quot;notUseTimeshiftTicket") > -1) return 10;
-			else if (data.IndexOf("webSocketUrl&quot;:&quot;ws") == -1 &&
-			         status == "ENDED") return 2;
+			else if (data != null && (data.IndexOf("webSocketUrl&quot;:&quot;ws") == -1 &&
+					status == "ENDED")) return 2;
 			else if (res.IndexOf("rejectedReasons&quot;:[&quot;notHavePayTicket") > -1) return 11;
 			//else if (status == "ENDED" && res.IndexOf(" onclick=\"Nicolive.WatchingReservation") > -1) return 9;
 			

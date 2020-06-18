@@ -246,14 +246,9 @@ namespace namaichi.play
 				process.StartInfo = si;
 				process.Start();
 				
-				
 				process2 = new Process();
 				var ffmpegSi = new ProcessStartInfo();
-//				ffmpegSi.FileName = "vlc.exe";
-//				exe = "C:\\Users\\zack\\Downloads\\MPC-HomeCinema.1.4.2824.0.x86\\MPC-HomeCinema.1.4.2824.0.x86\\mpc-hc.exe";
 				ffmpegSi.FileName = exe;
-//				ffmpegSi.FileName = "C:\\Users\\zack\\Desktop\\c#project\\nicoNewStreamRecorderKakkoKariRepo2 10.12 tuujou s\\nicoNewStreamRecorderKakkoKari\\namaichi\\bin\\Debug\\mpc\\mpc-be.exe";
-//				ffmpegSi.FileName = "C:\\Users\\zack\\Downloads\\MPC-HC.1.7.13.x64\\MPC-HC.1.7.13.x64\\mpc-hc64.exe";
 //				var ffmpegArg = "- /new";
 				
 				var ffmpegArg = "-";
@@ -267,32 +262,19 @@ namespace namaichi.play
 				process2.StartInfo = ffmpegSi;
 				process2.Start();
 				Thread.Sleep(1000);
-				if (isDefaultPlayer)
-					setPipeName(process2);
+				//if (isDefaultPlayer)
+				//	setPipeName(process2);
 				
 				var o = process.StandardOutput.BaseStream;
 				var _is = process2.StandardInput.BaseStream;
 				
 	//			var f = new FileStream("aa.ts", FileMode.Create);
-				var head = new byte[16*16];
-				var isFirst = true;
-				var cc = 0;
 				
-				var d = DateTime.Now;
-//				Task.Run(() => readFfmpeg(ffmpegP));
 				var b = new byte[100000000];
 				while (!process.HasExited && !process2.HasExited) {
 					try {
 						var i = o.Read(b, 0, b.Length);
-	//					if (isFirst) 
-//						Debug.WriteLine(i);
-						/*
-						using (var _wf = new FileStream(cc + ".flv", FileMode.Create)) {
-							_wf.Write(b, 0, i);
-							_wf.Flush();
-							cc++;
-						}
-						*/
+
 						
 						_is.Write(b, 0, i);
 						_is.Flush();

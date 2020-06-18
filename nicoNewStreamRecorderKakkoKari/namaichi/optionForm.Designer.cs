@@ -68,6 +68,9 @@ namespace namaichi
 			this.useSecondLoginChkBox = new System.Windows.Forms.CheckBox();
 			this.button3 = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
+			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.latencyList = new System.Windows.Forms.ComboBox();
+			this.label14 = new System.Windows.Forms.Label();
 			this.tabControl1.SuspendLayout();
 			this.tabPage6.SuspendLayout();
 			this.groupBox8.SuspendLayout();
@@ -75,6 +78,7 @@ namespace namaichi
 			this.groupBox10.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.groupBox3.SuspendLayout();
+			this.groupBox1.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
@@ -91,6 +95,7 @@ namespace namaichi
 			// 
 			// tabPage6
 			// 
+			this.tabPage6.Controls.Add(this.groupBox1);
 			this.tabPage6.Controls.Add(this.groupBox8);
 			this.tabPage6.Controls.Add(this.groupBox7);
 			this.tabPage6.Controls.Add(this.groupBox10);
@@ -106,7 +111,7 @@ namespace namaichi
 			// 
 			this.groupBox8.Controls.Add(this.anotherPlayerPathText);
 			this.groupBox8.Controls.Add(this.anotherPlayerSanshouBtn);
-			this.groupBox8.Location = new System.Drawing.Point(6, 284);
+			this.groupBox8.Location = new System.Drawing.Point(5, 341);
 			this.groupBox8.Name = "groupBox8";
 			this.groupBox8.Size = new System.Drawing.Size(385, 53);
 			this.groupBox8.TabIndex = 20;
@@ -426,6 +431,39 @@ namespace namaichi
 			this.button4.UseVisualStyleBackColor = true;
 			this.button4.Click += new System.EventHandler(this.optionCancel_Click);
 			// 
+			// groupBox1
+			// 
+			this.groupBox1.Controls.Add(this.latencyList);
+			this.groupBox1.Controls.Add(this.label14);
+			this.groupBox1.Location = new System.Drawing.Point(5, 289);
+			this.groupBox1.Name = "groupBox1";
+			this.groupBox1.Size = new System.Drawing.Size(385, 46);
+			this.groupBox1.TabIndex = 20;
+			this.groupBox1.TabStop = false;
+			this.groupBox1.Text = "遅延";
+			// 
+			// latencyList
+			// 
+			this.latencyList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.latencyList.FormattingEnabled = true;
+			this.latencyList.Items.AddRange(new object[] {
+									"0.5",
+									"1.0",
+									"1.5",
+									"3.0"});
+			this.latencyList.Location = new System.Drawing.Point(138, 15);
+			this.latencyList.Name = "latencyList";
+			this.latencyList.Size = new System.Drawing.Size(44, 20);
+			this.latencyList.TabIndex = 35;
+			// 
+			// label14
+			// 
+			this.label14.Location = new System.Drawing.Point(6, 18);
+			this.label14.Name = "label14";
+			this.label14.Size = new System.Drawing.Size(140, 19);
+			this.label14.TabIndex = 34;
+			this.label14.Text = "HLS接続時の遅延レベル：";
+			// 
 			// optionForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -448,8 +486,12 @@ namespace namaichi
 			this.tabPage2.ResumeLayout(false);
 			this.groupBox3.ResumeLayout(false);
 			this.groupBox3.PerformLayout();
+			this.groupBox1.ResumeLayout(false);
 			this.ResumeLayout(false);
 		}
+		private System.Windows.Forms.Label label14;
+		public System.Windows.Forms.ComboBox latencyList;
+		private System.Windows.Forms.GroupBox groupBox1;
 		private System.Windows.Forms.RadioButton isRtmpEngine;
 		private System.Windows.Forms.Button anotherPlayerSanshouBtn;
 		private System.Windows.Forms.TextBox anotherPlayerPathText;

@@ -240,7 +240,8 @@ namespace namaichi.rec
 				//util.debugWriteLine("getpage m3u8 mae");
 				addDebugBuf("getpage m3u8 mae");
 				
-				var res = util.getPageSource(hlsSegM3uUrl, container, null, false, 2000);
+				//var res = util.getPageSource(hlsSegM3uUrl, container, null, false, 2000);
+				var res = "";
 				if (res == null) {
 					addDebugBuf("m3u8 getter segM3u8List res null reconnect");
 //					setReconnecting(true);
@@ -561,8 +562,12 @@ namespace namaichi.rec
 		}
 		private string getHlsSegM3uUrl(string masterUrl) {
 			addDebugBuf("master m3u8 " + masterUrl);
-			var wc = new WebHeaderCollection();
-			var res = util.getPageSource(masterUrl, ref wc, container);
+			string res = null;
+			for (var i = 0; i < 10; i++) {
+				var wc = new WebHeaderCollection();
+				res = util.getPageSource(masterUrl, ref wc, container);
+				if (res != null) break;
+			}
 			if (res == null) {
 				reConnect(); 
 				setReconnecting(true);
