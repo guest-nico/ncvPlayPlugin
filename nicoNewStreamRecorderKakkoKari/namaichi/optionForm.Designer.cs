@@ -38,6 +38,9 @@ namespace namaichi
 		{
 			this.tabControl1 = new System.Windows.Forms.TabControl();
 			this.tabPage6 = new System.Windows.Forms.TabPage();
+			this.groupBox1 = new System.Windows.Forms.GroupBox();
+			this.latencyList = new System.Windows.Forms.ComboBox();
+			this.label14 = new System.Windows.Forms.Label();
 			this.groupBox8 = new System.Windows.Forms.GroupBox();
 			this.anotherPlayerPathText = new System.Windows.Forms.TextBox();
 			this.anotherPlayerSanshouBtn = new System.Windows.Forms.Button();
@@ -66,25 +69,29 @@ namespace namaichi
 			this.cookieFileSanshouBtn = new System.Windows.Forms.Button();
 			this.btnReload = new System.Windows.Forms.Button();
 			this.useSecondLoginChkBox = new System.Windows.Forms.CheckBox();
+			this.tabPage1 = new System.Windows.Forms.TabPage();
+			this.groupBox6 = new System.Windows.Forms.GroupBox();
+			this.isMinimizeNotifyChkBox = new System.Windows.Forms.CheckBox();
+			this.isMinimizedChkBox = new System.Windows.Forms.CheckBox();
 			this.button3 = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
-			this.groupBox1 = new System.Windows.Forms.GroupBox();
-			this.latencyList = new System.Windows.Forms.ComboBox();
-			this.label14 = new System.Windows.Forms.Label();
 			this.tabControl1.SuspendLayout();
 			this.tabPage6.SuspendLayout();
+			this.groupBox1.SuspendLayout();
 			this.groupBox8.SuspendLayout();
 			this.groupBox7.SuspendLayout();
 			this.groupBox10.SuspendLayout();
 			this.tabPage2.SuspendLayout();
 			this.groupBox3.SuspendLayout();
-			this.groupBox1.SuspendLayout();
+			this.tabPage1.SuspendLayout();
+			this.groupBox6.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// tabControl1
 			// 
 			this.tabControl1.Controls.Add(this.tabPage6);
 			this.tabControl1.Controls.Add(this.tabPage2);
+			this.tabControl1.Controls.Add(this.tabPage1);
 			this.tabControl1.Location = new System.Drawing.Point(9, 10);
 			this.tabControl1.Margin = new System.Windows.Forms.Padding(2);
 			this.tabControl1.Name = "tabControl1";
@@ -106,6 +113,39 @@ namespace namaichi
 			this.tabPage6.TabIndex = 5;
 			this.tabPage6.Text = "視聴設定";
 			this.tabPage6.UseVisualStyleBackColor = true;
+			// 
+			// groupBox1
+			// 
+			this.groupBox1.Controls.Add(this.latencyList);
+			this.groupBox1.Controls.Add(this.label14);
+			this.groupBox1.Location = new System.Drawing.Point(5, 289);
+			this.groupBox1.Name = "groupBox1";
+			this.groupBox1.Size = new System.Drawing.Size(385, 46);
+			this.groupBox1.TabIndex = 20;
+			this.groupBox1.TabStop = false;
+			this.groupBox1.Text = "遅延";
+			// 
+			// latencyList
+			// 
+			this.latencyList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+			this.latencyList.FormattingEnabled = true;
+			this.latencyList.Items.AddRange(new object[] {
+									"0.5",
+									"1.0",
+									"1.5",
+									"3.0"});
+			this.latencyList.Location = new System.Drawing.Point(138, 15);
+			this.latencyList.Name = "latencyList";
+			this.latencyList.Size = new System.Drawing.Size(44, 20);
+			this.latencyList.TabIndex = 35;
+			// 
+			// label14
+			// 
+			this.label14.Location = new System.Drawing.Point(6, 18);
+			this.label14.Name = "label14";
+			this.label14.Size = new System.Drawing.Size(140, 19);
+			this.label14.TabIndex = 34;
+			this.label14.Text = "HLS接続時の遅延レベル：";
 			// 
 			// groupBox8
 			// 
@@ -182,7 +222,7 @@ namespace namaichi
 									"3. 1Mbps(normal・低画質) (実験放送:high)",
 									"4. 384kbps(low) (実験放送:middle)",
 									"5. 192kbps(super_low) (実験放送:low)",
-			                        "6. 音声のみ(audio_high) (実験放送:audio_high)",});
+									"6. 音声のみ(audio_high) (実験放送:audio_high)"});
 			this.qualityListBox.Location = new System.Drawing.Point(26, 27);
 			this.qualityListBox.Name = "qualityListBox";
 			this.qualityListBox.Size = new System.Drawing.Size(247, 112);
@@ -411,6 +451,45 @@ namespace namaichi
 			this.useSecondLoginChkBox.Text = "ブラウザからクッキーが取得できなかった場合、次のアカウントでログインする";
 			this.useSecondLoginChkBox.UseVisualStyleBackColor = true;
 			// 
+			// tabPage1
+			// 
+			this.tabPage1.Controls.Add(this.groupBox6);
+			this.tabPage1.Location = new System.Drawing.Point(4, 22);
+			this.tabPage1.Name = "tabPage1";
+			this.tabPage1.Size = new System.Drawing.Size(403, 459);
+			this.tabPage1.TabIndex = 6;
+			this.tabPage1.Text = "一般";
+			this.tabPage1.UseVisualStyleBackColor = true;
+			// 
+			// groupBox6
+			// 
+			this.groupBox6.Controls.Add(this.isMinimizeNotifyChkBox);
+			this.groupBox6.Controls.Add(this.isMinimizedChkBox);
+			this.groupBox6.Location = new System.Drawing.Point(5, 10);
+			this.groupBox6.Name = "groupBox6";
+			this.groupBox6.Size = new System.Drawing.Size(379, 403);
+			this.groupBox6.TabIndex = 1;
+			this.groupBox6.TabStop = false;
+			this.groupBox6.Text = "Recorder設定";
+			// 
+			// isMinimizeNotifyChkBox
+			// 
+			this.isMinimizeNotifyChkBox.Location = new System.Drawing.Point(19, 40);
+			this.isMinimizeNotifyChkBox.Name = "isMinimizeNotifyChkBox";
+			this.isMinimizeNotifyChkBox.Size = new System.Drawing.Size(307, 19);
+			this.isMinimizeNotifyChkBox.TabIndex = 2;
+			this.isMinimizeNotifyChkBox.Text = "最小化時はタスクトレイに収納する";
+			this.isMinimizeNotifyChkBox.UseVisualStyleBackColor = true;
+			// 
+			// isMinimizedChkBox
+			// 
+			this.isMinimizedChkBox.Location = new System.Drawing.Point(19, 18);
+			this.isMinimizedChkBox.Name = "isMinimizedChkBox";
+			this.isMinimizedChkBox.Size = new System.Drawing.Size(271, 19);
+			this.isMinimizedChkBox.TabIndex = 2;
+			this.isMinimizedChkBox.Text = "自動起動時は最小化状態で起動する";
+			this.isMinimizedChkBox.UseVisualStyleBackColor = true;
+			// 
 			// button3
 			// 
 			this.button3.Location = new System.Drawing.Point(249, 500);
@@ -431,39 +510,6 @@ namespace namaichi
 			this.button4.UseVisualStyleBackColor = true;
 			this.button4.Click += new System.EventHandler(this.optionCancel_Click);
 			// 
-			// groupBox1
-			// 
-			this.groupBox1.Controls.Add(this.latencyList);
-			this.groupBox1.Controls.Add(this.label14);
-			this.groupBox1.Location = new System.Drawing.Point(5, 289);
-			this.groupBox1.Name = "groupBox1";
-			this.groupBox1.Size = new System.Drawing.Size(385, 46);
-			this.groupBox1.TabIndex = 20;
-			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "遅延";
-			// 
-			// latencyList
-			// 
-			this.latencyList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-			this.latencyList.FormattingEnabled = true;
-			this.latencyList.Items.AddRange(new object[] {
-									"0.5",
-									"1.0",
-									"1.5",
-									"3.0"});
-			this.latencyList.Location = new System.Drawing.Point(138, 15);
-			this.latencyList.Name = "latencyList";
-			this.latencyList.Size = new System.Drawing.Size(44, 20);
-			this.latencyList.TabIndex = 35;
-			// 
-			// label14
-			// 
-			this.label14.Location = new System.Drawing.Point(6, 18);
-			this.label14.Name = "label14";
-			this.label14.Size = new System.Drawing.Size(140, 19);
-			this.label14.TabIndex = 34;
-			this.label14.Text = "HLS接続時の遅延レベル：";
-			// 
 			// optionForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -479,6 +525,7 @@ namespace namaichi
 			this.Text = "オプション";
 			this.tabControl1.ResumeLayout(false);
 			this.tabPage6.ResumeLayout(false);
+			this.groupBox1.ResumeLayout(false);
 			this.groupBox8.ResumeLayout(false);
 			this.groupBox8.PerformLayout();
 			this.groupBox7.ResumeLayout(false);
@@ -486,9 +533,14 @@ namespace namaichi
 			this.tabPage2.ResumeLayout(false);
 			this.groupBox3.ResumeLayout(false);
 			this.groupBox3.PerformLayout();
-			this.groupBox1.ResumeLayout(false);
+			this.tabPage1.ResumeLayout(false);
+			this.groupBox6.ResumeLayout(false);
 			this.ResumeLayout(false);
 		}
+		private System.Windows.Forms.CheckBox isMinimizedChkBox;
+		private System.Windows.Forms.CheckBox isMinimizeNotifyChkBox;
+		private System.Windows.Forms.GroupBox groupBox6;
+		private System.Windows.Forms.TabPage tabPage1;
 		private System.Windows.Forms.Label label14;
 		public System.Windows.Forms.ComboBox latencyList;
 		private System.Windows.Forms.GroupBox groupBox1;

@@ -58,10 +58,6 @@ namespace namaichi
 		{
 			madeThread = Thread.CurrentThread;
 			//args = "-nowindo -stdIO -IsmessageBox=false -IscloseExit=true lv316762771 -ts-start=1785s -ts-end=0s -ts-list=false -ts-list-m3u8=false -ts-list-update=5 -ts-list-open=false -ts-list-command=\"notepad{i}\" -ts-vpos-starttime=true -afterConvertMode=4 -qualityRank=0,1,2,3,4,5 -IsLogFile=true".Split(' ');
-			//read std
-//			args = new String[]{"-EngineMode=3"};
-			//startStdRead();
-			//config.set("EngineMode", "1");
 			
 			#if !DEBUG
 				FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -80,8 +76,6 @@ namespace namaichi
 			rec = new rec.RecordingManager(this, config);
 			player = new Player(this, config);
 			
-//			args = new string[]{"a", "-qualityrank=1,2,3,4,5,0", "lv315967820", "-istitlebarinfo=False", "-ts-start=25h2m", "-openUrlListCommand=notepad"};
-//			args = new string[]{"Debug_1.ts"};
 			if (Array.IndexOf(args, "-stdIO") > -1) util.isStdIO = true;
 			
 			var lv = (args.Length == 0) ? null : util.getRegGroup(args[0], "(lv\\d+(,\\d+)*)");
@@ -108,7 +102,16 @@ namespace namaichi
 			setBackColor(Color.FromArgb(int.Parse(config.get("recBackColor"))));
 			setForeColor(Color.FromArgb(int.Parse(config.get("recForeColor"))));
 			
+			if (bool.Parse(config.get("Isminimized"))) {
+				WindowState = FormWindowState.Minimized;
+				if (bool.Parse(config.get("IsMinimizeNotify"))) {
+					Visible = false;
+					ShowInTaskbar = false;
+				}
+			}
 			
+			if (config.get("qualityRank").Split(',').Length == 5)
+				config.set("qualityRank", config.get("qualityRank") + ",5"); 
 		}
 
 		private void recBtnAction(object sender, EventArgs e) {
@@ -665,6 +668,30 @@ namespace namaichi
 				i.Text = original + (i.Text.IndexOf(s) > -1 ? 
 						"(現在)" : "");
 			}
+		}
+		
+		void MainFormSizeChanged(object sender, EventArgs e)
+		{
+			if (WindowState == FormWindowState.Minimized &&
+			    	bool.Parse(config.get("IsMinimizeNotify")))
+				Visible = false;
+		}
+		void NotifyIconDoubleClick(object sender, EventArgs e)
+		{
+			activateForm();
+		}
+		void activateForm() {
+			Visible = true;
+			ShowInTaskbar = true;
+			if (WindowState == FormWindowState.Minimized) {
+				WindowState = FormWindowState.Normal;
+			}
+			Activate();
+			
+		}
+		void OpenNotifyIconMenuClick(object sender, EventArgs e)
+		{
+			activateForm();
 		}
 	}
 }

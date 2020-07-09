@@ -132,9 +132,11 @@ public class config
 			{"cookieFile2",""},
 			{"iscookie2","false"},
 			
+			{"IsMinimizeNotify","false"},
+			{"Isminimized","false"},
+			
 			{"IsdefaultBrowserPath","true"},
 			{"browserPath",""},
-			{"Isminimized","false"},
 			{"IscloseExit","true"},
 			{"IsfailExit","false"},
 			{"IsgetComment","true"},
@@ -149,7 +151,7 @@ public class config
 			{"IsgetcommentXml","true"},
 			{"IstitlebarSamune","true"},
 			{"IsautoFollowComgen","false"},
-			{"qualityRank","0,1,2,3,4"},
+			{"qualityRank","0,1,2,3,4,5"},
 			{"IsLogFile","false"},
 			{"IsSegmentNukeInfo","true"},
 			{"segmentSaveType","0"},

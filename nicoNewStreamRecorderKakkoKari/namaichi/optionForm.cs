@@ -114,7 +114,9 @@ namespace namaichi
 				{"iscookie",isCookieFileSiteiChkBox.Checked.ToString().ToLower()},
 				{"user_session",""},
 				{"user_session_secure",""},
-
+				
+				{"Isminimized",isMinimizedChkBox.Checked.ToString().ToLower()},
+				{"IsMinimizeNotify",isMinimizeNotifyChkBox.Checked.ToString().ToLower()},
 			};
 			
 		}
@@ -206,6 +208,9 @@ namespace namaichi
         		
         	var si = SourceInfoSerialize.load(false);
         	nicoSessionComboBox1.Selector.SetInfoAsync(si);
+        	
+        	isMinimizedChkBox.Checked = bool.Parse(cfg.get("Isminimized"));
+        	isMinimizeNotifyChkBox.Checked = bool.Parse(cfg.get("IsMinimizeNotify"));
         }
         
 		void optionCancel_Click(object sender, EventArgs e)
@@ -252,13 +257,13 @@ namespace namaichi
 		
 		void highRankBtn_Click(object sender, EventArgs e)
 		{
-			int[] ranks = {0,1,2,3,4};
+			int[] ranks = {0,1,2,3,4,5};
 			qualityListBox.Items.Clear();
 			qualityListBox.Items.AddRange(getRanksToItems(ranks, qualityListBox));
 		}
 		void lowRankBtn_Click(object sender, EventArgs e)
 		{
-			int[] ranks = {4, 3, 2, 1, 0};
+			int[] ranks = {5, 4, 3, 2, 1, 0};
 			qualityListBox.Items.Clear();
 			qualityListBox.Items.AddRange(getRanksToItems(ranks, qualityListBox));
 		}

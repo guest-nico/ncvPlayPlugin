@@ -38,8 +38,8 @@ namespace namaichi
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
-			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			System.Windows.Forms.ToolStripMenuItem NotifyQualityaudio_highMenu;
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
 			this.qualityBox = new System.Windows.Forms.ComboBox();
 			this.urlText = new System.Windows.Forms.TextBox();
 			this.recBtn = new System.Windows.Forms.Button();
@@ -72,10 +72,20 @@ namespace namaichi
 			this.NotifyQualitysuper_highMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.NotifyQualitySeparator = new System.Windows.Forms.ToolStripSeparator();
 			this.closeNotifyIconMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.openNotifyIconMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
 			NotifyQualityaudio_highMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
 			this.notifyIconMenuStrip.SuspendLayout();
 			this.SuspendLayout();
+			// 
+			// NotifyQualityaudio_highMenu
+			// 
+			NotifyQualityaudio_highMenu.Name = "NotifyQualityaudio_highMenu";
+			NotifyQualityaudio_highMenu.Size = new System.Drawing.Size(168, 22);
+			NotifyQualityaudio_highMenu.Text = "画質:audio_high";
+			NotifyQualityaudio_highMenu.Visible = false;
+			NotifyQualityaudio_highMenu.Click += new System.EventHandler(this.notifyQualityMenuClick);
 			// 
 			// qualityBox
 			// 
@@ -258,6 +268,7 @@ namespace namaichi
 			this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
 			this.notifyIcon.Text = "ニコ生放送チェックツール（仮";
 			this.notifyIcon.Visible = true;
+			this.notifyIcon.DoubleClick += new System.EventHandler(this.NotifyIconDoubleClick);
 			// 
 			// notifyIconMenuStrip
 			// 
@@ -274,9 +285,11 @@ namespace namaichi
 									this.NotifyQualityhighMenu,
 									this.NotifyQualitysuper_highMenu,
 									this.NotifyQualitySeparator,
+									this.openNotifyIconMenu,
+									this.toolStripSeparator1,
 									this.closeNotifyIconMenu});
 			this.notifyIconMenuStrip.Name = "notifyIconMenuStrip";
-			this.notifyIconMenuStrip.Size = new System.Drawing.Size(169, 280);
+			this.notifyIconMenuStrip.Size = new System.Drawing.Size(169, 308);
 			// 
 			// Notify30LatencyMenu
 			// 
@@ -310,14 +323,6 @@ namespace namaichi
 			// 
 			this.notifyIconRecentSeparator.Name = "notifyIconRecentSeparator";
 			this.notifyIconRecentSeparator.Size = new System.Drawing.Size(165, 6);
-			// 
-			// NotifyQualityaudio_highMenu
-			// 
-			NotifyQualityaudio_highMenu.Name = "NotifyQualityaudio_highMenu";
-			NotifyQualityaudio_highMenu.Size = new System.Drawing.Size(168, 22);
-			NotifyQualityaudio_highMenu.Text = "画質:audio_high";
-			NotifyQualityaudio_highMenu.Visible = false;
-			NotifyQualityaudio_highMenu.Click += new System.EventHandler(this.notifyQualityMenuClick);
 			// 
 			// NotifyQualitysuper_lowMenu
 			// 
@@ -372,6 +377,18 @@ namespace namaichi
 			this.closeNotifyIconMenu.Text = "終了";
 			this.closeNotifyIconMenu.Click += new System.EventHandler(this.CloseNotifyIconMenuClick);
 			// 
+			// openNotifyIconMenu
+			// 
+			this.openNotifyIconMenu.Name = "openNotifyIconMenu";
+			this.openNotifyIconMenu.Size = new System.Drawing.Size(168, 22);
+			this.openNotifyIconMenu.Text = "開く";
+			this.openNotifyIconMenu.Click += new System.EventHandler(this.OpenNotifyIconMenuClick);
+			// 
+			// toolStripSeparator1
+			// 
+			this.toolStripSeparator1.Name = "toolStripSeparator1";
+			this.toolStripSeparator1.Size = new System.Drawing.Size(165, 6);
+			// 
 			// MainForm
 			// 
 			this.AllowDrop = true;
@@ -395,6 +412,7 @@ namespace namaichi
 			this.Text = "ニコ生新配信録画ツール（仮 ver0.86.15";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.form_Close);
 			this.Load += new System.EventHandler(this.mainForm_Load);
+			this.SizeChanged += new System.EventHandler(this.MainFormSizeChanged);
 			this.DragDrop += new System.Windows.Forms.DragEventHandler(this.MainFormDragDrop);
 			this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainFormDragEnter);
 			this.menuStrip1.ResumeLayout(false);
@@ -403,6 +421,8 @@ namespace namaichi
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+		private System.Windows.Forms.ToolStripMenuItem openNotifyIconMenu;
 		private System.Windows.Forms.ToolStripMenuItem NotifyQualitysuper_highMenu;
 		private System.Windows.Forms.ToolStripMenuItem NotifyQualityhighMenu;
 		private System.Windows.Forms.ToolStripMenuItem NotifyQualitynormalMenu;
