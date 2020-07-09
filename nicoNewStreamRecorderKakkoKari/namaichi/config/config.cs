@@ -149,7 +149,7 @@ public class config
 			{"IsgetcommentXml","true"},
 			{"IstitlebarSamune","true"},
 			{"IsautoFollowComgen","false"},
-			{"qualityRank","0,1,2,3,4,5"},
+			{"qualityRank","0,1,2,3,4"},
 			{"IsLogFile","false"},
 			{"IsSegmentNukeInfo","true"},
 			{"segmentSaveType","0"},

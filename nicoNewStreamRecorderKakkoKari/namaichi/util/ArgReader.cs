@@ -204,6 +204,18 @@ namespace namaichi.utility
 						return false;
 					}
 				}
+				if (lowKeys[i] == "latency") {
+					double _s = 0;
+					if (double.TryParse(val, out _s) && _s == 0.5 || 
+					    	_s == 1 || _s == 1.5 || _s == 3) {
+						setVal = val;
+						setName = keys[i];
+						return true;
+					} else {
+						form.addLogText(name + "の値が設定できませんでした(0.5,1.0,1.5,3.0) " + val, false);
+						return false;
+					}
+				}
 				//ts
 				if (lowKeys[i] == "ts-start") {
 					var _t = Regex.Match(val.ToLower(), "((\\d*)h)*((\\d*)m)*((\\d*)s)*");

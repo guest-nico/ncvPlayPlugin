@@ -42,7 +42,7 @@ namespace namaichi
 				isRenketuLastFile.Enabled = false;
 				isFromLastTimeRadioBtn.Enabled = false;
 			}
-			isRenketuLastFile.Visible = (segmentSaveType == "0");
+			//isRenketuLastFile.Visible = (segmentSaveType == "0");
 			updateTimeShiftStartTimeChkBox();
 			
 			var isUrlList = bool.Parse(config.get("IsUrlList"));

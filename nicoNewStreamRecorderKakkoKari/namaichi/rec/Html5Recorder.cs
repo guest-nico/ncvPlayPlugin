@@ -78,7 +78,6 @@ namespace namaichi.rec
 		public string[] getWebSocketInfo(string data, bool isRtmp, MainForm form, string _latency) {
 //			util.debugWriteLine(data);
 			var wsUrl = util.getRegGroup(data, "\"webSocketUrl\":\"([\\d\\D]+?)\"");
-			//var latency = float.Parse(form.rec.cfg.get("latency"));
 			var latency = float.Parse(_latency);
 			wsUrl += "&frontend_id=" + (latency % 1 == 0 || isRtmp ? "90" : "12");
 			
@@ -278,7 +277,10 @@ namespace namaichi.rec
 					
 					timeShiftConfig = null;
 					if (isTimeShift && !isRtmpOnlyPage) {
-						timeShiftConfig = getTimeShiftConfig(null, null, null, null, null, null, rm.cfg, 0);
+						if (rm.argTsConfig != null)
+							timeShiftConfig = rm.argTsConfig.clone();
+						else 
+							timeShiftConfig = getTimeShiftConfig(null, null, null, null, null, null, rm.cfg, 0);
 						if (timeShiftConfig == null) return 2;
 					}
 					recFolderFile = new string[]{"", "", ""};

@@ -15,6 +15,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Text.RegularExpressions;
+using System.Linq;
 
 using namaichi.config;
 using SunokoLibrary.Application;
@@ -251,21 +252,22 @@ namespace namaichi
 		
 		void highRankBtn_Click(object sender, EventArgs e)
 		{
-			int[] ranks = {1,2,3,4,5,0};
+			int[] ranks = {0,1,2,3,4};
 			qualityListBox.Items.Clear();
 			qualityListBox.Items.AddRange(getRanksToItems(ranks, qualityListBox));
 		}
 		void lowRankBtn_Click(object sender, EventArgs e)
 		{
-			int[] ranks = {5, 4, 3, 2, 1, 0};
+			int[] ranks = {4, 3, 2, 1, 0};
 			qualityListBox.Items.Clear();
 			qualityListBox.Items.AddRange(getRanksToItems(ranks, qualityListBox));
 		}
 		public object[] getRanksToItems(int[] ranks, ListBox owner) {
 			var items = new Dictionary<int, string> {
-				{0, "自動(abr)"}, {1, "3Mbps(super_high)"},
-				{2, "2Mbps(high)"}, {3, "1Mbps(normal)"},
-				{4, "384kbps(low)"}, {5, "192kbps(super_low)"},
+				{0, "3Mbps(super_high)"},
+				{1, "2Mbps(high)"}, {2, "1Mbps(normal)"},
+				{3, "384kbps(low)"}, {4, "192kbps(super_low)"},
+				{5, "音声のみ(audio_high)"}
 			};
 //			var ret = new ListBox.ObjectCollection(owner);
 			var ret = new List<object>();
@@ -306,9 +308,10 @@ namespace namaichi
 		}
 		List<int> getItemsToRanks(ListBox.ObjectCollection items) {
 			var itemsDic = new Dictionary<int, string> {
-				{0, "自動(abr)"}, {1, "3Mbps(super_high)"},
-				{2, "2Mbps(high)"}, {3, "1Mbps(normal)"},
-				{4, "384kbps(low)"}, {5, "192kbps(super_low)"},
+				{0, "3Mbps(super_high)"},
+				{1, "2Mbps(high)"}, {2, "1Mbps(normal)"},
+				{3, "384kbps(low)"}, {4, "192kbps(super_low)"},
+				{5, "音声のみ(audio_high)"}
 			};
 			var ret = new List<int>();
 			for (int i = 0; i < items.Count; i++) {

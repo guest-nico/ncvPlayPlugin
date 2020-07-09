@@ -37,7 +37,9 @@ namespace namaichi
 		/// </summary>
 		private void InitializeComponent()
 		{
+			this.components = new System.ComponentModel.Container();
 			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
+			System.Windows.Forms.ToolStripMenuItem NotifyQualityaudio_highMenu;
 			this.qualityBox = new System.Windows.Forms.ComboBox();
 			this.urlText = new System.Windows.Forms.TextBox();
 			this.recBtn = new System.Windows.Forms.Button();
@@ -56,7 +58,23 @@ namespace namaichi
 			this.playerBtn = new System.Windows.Forms.Button();
 			this.logText = new System.Windows.Forms.TextBox();
 			this.latencyList = new System.Windows.Forms.ComboBox();
+			this.notifyIcon = new System.Windows.Forms.NotifyIcon(this.components);
+			this.notifyIconMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
+			this.Notify30LatencyMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.Notify15LatencyMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.Notify10LatencyMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.Notify05LatencyMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.notifyIconRecentSeparator = new System.Windows.Forms.ToolStripSeparator();
+			this.NotifyQualitysuper_lowMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.NotifyQualitylowMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.NotifyQualitynormalMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.NotifyQualityhighMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.NotifyQualitysuper_highMenu = new System.Windows.Forms.ToolStripMenuItem();
+			this.NotifyQualitySeparator = new System.Windows.Forms.ToolStripSeparator();
+			this.closeNotifyIconMenu = new System.Windows.Forms.ToolStripMenuItem();
+			NotifyQualityaudio_highMenu = new System.Windows.Forms.ToolStripMenuItem();
 			this.menuStrip1.SuspendLayout();
+			this.notifyIconMenuStrip.SuspendLayout();
 			this.SuspendLayout();
 			// 
 			// qualityBox
@@ -233,6 +251,127 @@ namespace namaichi
 			this.latencyList.TabIndex = 19;
 			this.latencyList.TextChanged += new System.EventHandler(this.latencyTextUpdate);
 			// 
+			// notifyIcon
+			// 
+			this.notifyIcon.BalloonTipTitle = "title";
+			this.notifyIcon.ContextMenuStrip = this.notifyIconMenuStrip;
+			this.notifyIcon.Icon = ((System.Drawing.Icon)(resources.GetObject("notifyIcon.Icon")));
+			this.notifyIcon.Text = "ニコ生放送チェックツール（仮";
+			this.notifyIcon.Visible = true;
+			// 
+			// notifyIconMenuStrip
+			// 
+			this.notifyIconMenuStrip.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+									this.Notify30LatencyMenu,
+									this.Notify15LatencyMenu,
+									this.Notify10LatencyMenu,
+									this.Notify05LatencyMenu,
+									this.notifyIconRecentSeparator,
+									NotifyQualityaudio_highMenu,
+									this.NotifyQualitysuper_lowMenu,
+									this.NotifyQualitylowMenu,
+									this.NotifyQualitynormalMenu,
+									this.NotifyQualityhighMenu,
+									this.NotifyQualitysuper_highMenu,
+									this.NotifyQualitySeparator,
+									this.closeNotifyIconMenu});
+			this.notifyIconMenuStrip.Name = "notifyIconMenuStrip";
+			this.notifyIconMenuStrip.Size = new System.Drawing.Size(169, 280);
+			// 
+			// Notify30LatencyMenu
+			// 
+			this.Notify30LatencyMenu.Name = "Notify30LatencyMenu";
+			this.Notify30LatencyMenu.Size = new System.Drawing.Size(168, 22);
+			this.Notify30LatencyMenu.Text = "遅延:3.0";
+			this.Notify30LatencyMenu.Click += new System.EventHandler(this.notifyLatencyMenu);
+			// 
+			// Notify15LatencyMenu
+			// 
+			this.Notify15LatencyMenu.Name = "Notify15LatencyMenu";
+			this.Notify15LatencyMenu.Size = new System.Drawing.Size(168, 22);
+			this.Notify15LatencyMenu.Text = "遅延:1.5";
+			this.Notify15LatencyMenu.Click += new System.EventHandler(this.notifyLatencyMenu);
+			// 
+			// Notify10LatencyMenu
+			// 
+			this.Notify10LatencyMenu.Name = "Notify10LatencyMenu";
+			this.Notify10LatencyMenu.Size = new System.Drawing.Size(168, 22);
+			this.Notify10LatencyMenu.Text = "遅延:1.0";
+			this.Notify10LatencyMenu.Click += new System.EventHandler(this.notifyLatencyMenu);
+			// 
+			// Notify05LatencyMenu
+			// 
+			this.Notify05LatencyMenu.Name = "Notify05LatencyMenu";
+			this.Notify05LatencyMenu.Size = new System.Drawing.Size(168, 22);
+			this.Notify05LatencyMenu.Text = "遅延:0.5";
+			this.Notify05LatencyMenu.Click += new System.EventHandler(this.notifyLatencyMenu);
+			// 
+			// notifyIconRecentSeparator
+			// 
+			this.notifyIconRecentSeparator.Name = "notifyIconRecentSeparator";
+			this.notifyIconRecentSeparator.Size = new System.Drawing.Size(165, 6);
+			// 
+			// NotifyQualityaudio_highMenu
+			// 
+			NotifyQualityaudio_highMenu.Name = "NotifyQualityaudio_highMenu";
+			NotifyQualityaudio_highMenu.Size = new System.Drawing.Size(168, 22);
+			NotifyQualityaudio_highMenu.Text = "画質:audio_high";
+			NotifyQualityaudio_highMenu.Visible = false;
+			NotifyQualityaudio_highMenu.Click += new System.EventHandler(this.notifyQualityMenuClick);
+			// 
+			// NotifyQualitysuper_lowMenu
+			// 
+			this.NotifyQualitysuper_lowMenu.Name = "NotifyQualitysuper_lowMenu";
+			this.NotifyQualitysuper_lowMenu.Size = new System.Drawing.Size(168, 22);
+			this.NotifyQualitysuper_lowMenu.Text = "画質:super_low";
+			this.NotifyQualitysuper_lowMenu.Visible = false;
+			this.NotifyQualitysuper_lowMenu.Click += new System.EventHandler(this.notifyQualityMenuClick);
+			// 
+			// NotifyQualitylowMenu
+			// 
+			this.NotifyQualitylowMenu.Name = "NotifyQualitylowMenu";
+			this.NotifyQualitylowMenu.Size = new System.Drawing.Size(168, 22);
+			this.NotifyQualitylowMenu.Text = "画質:low";
+			this.NotifyQualitylowMenu.Visible = false;
+			this.NotifyQualitylowMenu.Click += new System.EventHandler(this.notifyQualityMenuClick);
+			// 
+			// NotifyQualitynormalMenu
+			// 
+			this.NotifyQualitynormalMenu.Name = "NotifyQualitynormalMenu";
+			this.NotifyQualitynormalMenu.Size = new System.Drawing.Size(168, 22);
+			this.NotifyQualitynormalMenu.Text = "画質:normal";
+			this.NotifyQualitynormalMenu.Visible = false;
+			this.NotifyQualitynormalMenu.Click += new System.EventHandler(this.notifyQualityMenuClick);
+			// 
+			// NotifyQualityhighMenu
+			// 
+			this.NotifyQualityhighMenu.Name = "NotifyQualityhighMenu";
+			this.NotifyQualityhighMenu.Size = new System.Drawing.Size(168, 22);
+			this.NotifyQualityhighMenu.Text = "画質:high";
+			this.NotifyQualityhighMenu.Visible = false;
+			this.NotifyQualityhighMenu.Click += new System.EventHandler(this.notifyQualityMenuClick);
+			// 
+			// NotifyQualitysuper_highMenu
+			// 
+			this.NotifyQualitysuper_highMenu.Name = "NotifyQualitysuper_highMenu";
+			this.NotifyQualitysuper_highMenu.Size = new System.Drawing.Size(168, 22);
+			this.NotifyQualitysuper_highMenu.Text = "画質:super_high";
+			this.NotifyQualitysuper_highMenu.Visible = false;
+			this.NotifyQualitysuper_highMenu.Click += new System.EventHandler(this.notifyQualityMenuClick);
+			// 
+			// NotifyQualitySeparator
+			// 
+			this.NotifyQualitySeparator.Name = "NotifyQualitySeparator";
+			this.NotifyQualitySeparator.Size = new System.Drawing.Size(165, 6);
+			this.NotifyQualitySeparator.Visible = false;
+			// 
+			// closeNotifyIconMenu
+			// 
+			this.closeNotifyIconMenu.Name = "closeNotifyIconMenu";
+			this.closeNotifyIconMenu.Size = new System.Drawing.Size(168, 22);
+			this.closeNotifyIconMenu.Text = "終了";
+			this.closeNotifyIconMenu.Click += new System.EventHandler(this.CloseNotifyIconMenuClick);
+			// 
 			// MainForm
 			// 
 			this.AllowDrop = true;
@@ -251,6 +390,7 @@ namespace namaichi
 			this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
 			this.MainMenuStrip = this.menuStrip1;
 			this.Margin = new System.Windows.Forms.Padding(2);
+			this.MaximizeBox = false;
 			this.Name = "MainForm";
 			this.Text = "ニコ生新配信録画ツール（仮 ver0.86.15";
 			this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.form_Close);
@@ -259,9 +399,24 @@ namespace namaichi
 			this.DragEnter += new System.Windows.Forms.DragEventHandler(this.MainFormDragEnter);
 			this.menuStrip1.ResumeLayout(false);
 			this.menuStrip1.PerformLayout();
+			this.notifyIconMenuStrip.ResumeLayout(false);
 			this.ResumeLayout(false);
 			this.PerformLayout();
 		}
+		private System.Windows.Forms.ToolStripMenuItem NotifyQualitysuper_highMenu;
+		private System.Windows.Forms.ToolStripMenuItem NotifyQualityhighMenu;
+		private System.Windows.Forms.ToolStripMenuItem NotifyQualitynormalMenu;
+		private System.Windows.Forms.ToolStripMenuItem NotifyQualitylowMenu;
+		private System.Windows.Forms.ToolStripMenuItem NotifyQualitysuper_lowMenu;
+		private System.Windows.Forms.ToolStripMenuItem Notify05LatencyMenu;
+		private System.Windows.Forms.ToolStripMenuItem Notify10LatencyMenu;
+		private System.Windows.Forms.ToolStripMenuItem Notify15LatencyMenu;
+		private System.Windows.Forms.ToolStripMenuItem Notify30LatencyMenu;
+		private System.Windows.Forms.ToolStripMenuItem closeNotifyIconMenu;
+		private System.Windows.Forms.ToolStripSeparator NotifyQualitySeparator;
+		private System.Windows.Forms.ToolStripSeparator notifyIconRecentSeparator;
+		private System.Windows.Forms.ContextMenuStrip notifyIconMenuStrip;
+		public System.Windows.Forms.NotifyIcon notifyIcon;
 		public System.Windows.Forms.ComboBox latencyList;
 		private System.Windows.Forms.ToolStripMenuItem characterColorMenuItem;
 		private System.Windows.Forms.ToolStripMenuItem formColorMenuItem;

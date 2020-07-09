@@ -97,15 +97,18 @@ namespace namaichi
 //            checkBoxShowAll.Checked = bool.Parse(config.get("isAllBrowserMode"));
 			//if (isInitRun) initRec();
 			try {
-				Width = int.Parse(config.get("Width"));
-				Height = int.Parse(config.get("Height"));
+				//Width = int.Parse(config.get("Width"));
+				//Height = int.Parse(config.get("Height"));
+				Width = 492;
+				Height = 201;
 			} catch (Exception e) {
 				util.debugWriteLine(e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
 			}
 			
 			setBackColor(Color.FromArgb(int.Parse(config.get("recBackColor"))));
 			setForeColor(Color.FromArgb(int.Parse(config.get("recForeColor"))));
-			latencyList.Text = config.get("latency");
+			
+			
 		}
 
 		private void recBtnAction(object sender, EventArgs e) {
@@ -382,7 +385,7 @@ namespace namaichi
 					this.WindowState = FormWindowState.Minimized;
 				}
             }
-			
+			setLatencyListText(config.get("latency"));
 		}
 		
 		void versionMenu_Click(object sender, EventArgs e)
@@ -448,6 +451,28 @@ namespace namaichi
 					       	}
 					       	qualityBox.Tag = "set";
 							qualityBox.Text = recQuality;
+							
+							//notify menu
+							if (isChange) {
+								foreach (var _m in notifyIconMenuStrip.Items) {
+									if (!(_m is ToolStripMenuItem)) continue;
+									var m = (ToolStripMenuItem)_m;
+									
+									if (m.Name.IndexOf("Quality") > -1) {
+										var visible = false;
+										foreach  (var _l in l) {
+											if (m.Name.IndexOf(_l) > -1) visible = true;
+										}
+										m.Visible = visible;
+										
+										var original = util.getRegGroup(m.Text, "(.+[a-z])");
+										m.Text = original + (m.Text.IndexOf(recQuality) > -1 ? 
+												"(現在)" : "");
+									}
+								}
+								NotifyQualitySeparator.Visible = l.Length != 0;
+							}
+							
 						} catch (Exception e) {
 		       	       		util.debugWriteLine("player btn enabled exception " + e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
 	       	       		}
@@ -492,6 +517,8 @@ namespace namaichi
 			}
 			if (rec.wsr != null)
 				rec.wsr.setQuality(qualityBox.Text);
+			
+			setQualityNotifyText(qualityBox.Text);
 		}
 		public void setPlayerBtnText(string s) {
 			if (!util.isShowWindow) return;
@@ -556,6 +583,7 @@ namespace namaichi
 			if (latencyList.Text == "") return;
 			if (rec.wsr != null)
 				rec.wsr.setLatency(latencyList.Text);
+			setLatencyListText(latencyList.Text);
 		}
 		public bool formAction(Action a, bool isAsync = true) {
 			if (IsDisposed || !util.isShowWindow) return false;
@@ -591,6 +619,52 @@ namespace namaichi
 				ret = latencyList.Text;
 			}, false);
 			return ret;
+		}
+		void CloseNotifyIconMenuClick(object sender, EventArgs e)
+		{
+			Close();
+		}
+		
+		void notifyLatencyMenu(object sender, EventArgs e)
+		{
+			try {
+				var name = util.getRegGroup(((ToolStripMenuItem)sender).Name, "(\\d+)");
+				name = name.Insert(1, ".");
+				latencyList.Text = name;
+			} catch (Exception ee) {
+				util.debugWriteLine(ee.Message + ee.Source + ee.StackTrace + ee.TargetSite);
+			}
+		}
+		
+		void notifyQualityMenuClick(object sender, EventArgs e)
+		{
+			try {
+				var name = util.getRegGroup(((ToolStripMenuItem)sender).Name, "Quality(.+?)Menu");
+				qualityBox.Text = name;
+			} catch (Exception ee) {
+				util.debugWriteLine(ee.Message + ee.Source + ee.StackTrace + ee.TargetSite);
+			}
+		}
+		void setLatencyListText(string s) {
+			latencyList.Text = s;
+			foreach (var item in notifyIconMenuStrip.Items) {
+				if (!(item is ToolStripMenuItem)) continue;
+				var i = (ToolStripMenuItem)item;
+				if (i.Text.IndexOf("遅延") == -1) continue;
+				var original = util.getRegGroup(i.Text, "(.+\\d)");
+				i.Text = original + (i.Text.IndexOf(s) > -1 ? 
+						"(現在)" : "");
+			}
+		}
+		void setQualityNotifyText(string s) {
+			foreach (var item in notifyIconMenuStrip.Items) {
+				if (!(item is ToolStripMenuItem)) continue;
+				var i = (ToolStripMenuItem)item;
+				if (i.Text.IndexOf("画質") == -1) continue;
+				var original = util.getRegGroup(i.Text, "(.+[a-z])");
+				i.Text = original + (i.Text.IndexOf(s) > -1 ? 
+						"(現在)" : "");
+			}
 		}
 	}
 }

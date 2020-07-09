@@ -208,7 +208,7 @@ namespace namaichi.rec
 		private string getBestGettableQuolity() {
 			//var qualityList = new string[] {"abr", "super_high", "high",
 			//	"normal", "low", "super_low"};
-			var qualityList = new string[] {"auto", "ultrahigh", "superhigh",
+			var qualityList = new string[] {"ultrahigh", "superhigh",
 				"high", "middle", "low"};
 			//var gettableList = util.getRegGroup(msg, "\"qualityTypes\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',');
 			var gettableList = availableQualities;
@@ -218,7 +218,7 @@ namespace namaichi.rec
 			var ranks = (rm.ri == null) ? (rm.cfg.get("qualityRank").Split(',')) :
 					rm.ri.qualityRank;
 			
-			var bestGettableQuality = "abr";
+			var bestGettableQuality = "middle";
 			foreach(var r in ranks) {
 				var q = qualityList[int.Parse(r)];
 				if (gettableList.Contains(q)) {

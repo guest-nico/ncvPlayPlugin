@@ -688,14 +688,16 @@ namespace namaichi.rec
 		private string getBestGettableQuolity(string msg, out string[] gettableList) {
 			var qualityList = new List<string>{//"abr",
 				"super_high", "high",
-				"normal", "low", "super_low"};
+				"normal", "low", "super_low",
+				"audio_high"};
 			
 			gettableList = webSocketInfo[2] == "1" ? 
 					util.getRegGroup(msg, "\"qualityTypes\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',')
 					: util.getRegGroup(msg, "\"availableQualities\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',');
 			var ranks = (rm.ri == null) ? (qualityRank.Split(',')) :
 					rm.ri.qualityRank;
-			if (ranks.Length == 6) qualityList.Insert(0, "abr");
+			//if (ranks.Length == 6) qualityList.Insert(0, "abr");
+			gettableList = new List<string>(gettableList).Where(x => x != "abr").ToArray();
 			
 			var bestGettableQuality = "normal";
 			foreach(var r in ranks) {

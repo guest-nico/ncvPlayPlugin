@@ -177,12 +177,12 @@ namespace namaichi
 			this.qualityListBox.FormattingEnabled = true;
 			this.qualityListBox.ItemHeight = 12;
 			this.qualityListBox.Items.AddRange(new object[] {
-									"1. 自動(abr) (実験放送:auto)",
-									"2. 3Mbps(super_high) (実験放送:ultrahigh)",
-									"3. 2Mbps(high・高画質) (実験放送:superhigh)",
-									"4. 1Mbps(normal・低画質) (実験放送:high)",
-									"5. 384kbps(low) (実験放送:middle)",
-									"6. 192kbps(super_low) (実験放送:low)"});
+									"1. 3Mbps(super_high) (実験放送:ultrahigh)",
+									"2. 2Mbps(high・高画質) (実験放送:superhigh)",
+									"3. 1Mbps(normal・低画質) (実験放送:high)",
+									"4. 384kbps(low) (実験放送:middle)",
+									"5. 192kbps(super_low) (実験放送:low)",
+			                        "6. 音声のみ(audio_high) (実験放送:audio_high)",});
 			this.qualityListBox.Location = new System.Drawing.Point(26, 27);
 			this.qualityListBox.Name = "qualityListBox";
 			this.qualityListBox.Size = new System.Drawing.Size(247, 112);

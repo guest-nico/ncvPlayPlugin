@@ -95,7 +95,7 @@ namespace namaichi
 			this.groupBox1.Size = new System.Drawing.Size(299, 165);
 			this.groupBox1.TabIndex = 0;
 			this.groupBox1.TabStop = false;
-			this.groupBox1.Text = "録画開始時間";
+			this.groupBox1.Text = "視聴開始時間";
 			// 
 			// isSetVposStartTime
 			// 
@@ -117,6 +117,7 @@ namespace namaichi
 			this.isRenketuLastFile.TabIndex = 5;
 			this.isRenketuLastFile.Text = "前回のファイルと新しい録画を連結する";
 			this.isRenketuLastFile.UseVisualStyleBackColor = true;
+			this.isRenketuLastFile.Visible = false;
 			// 
 			// lastFileInfoLabel
 			// 
@@ -125,6 +126,7 @@ namespace namaichi
 			this.lastFileInfoLabel.Size = new System.Drawing.Size(250, 17);
 			this.lastFileInfoLabel.TabIndex = 3;
 			this.lastFileInfoLabel.Text = "(?時間?分?秒まで録画済み)";
+			this.lastFileInfoLabel.Visible = false;
 			// 
 			// sLabel
 			// 
@@ -186,6 +188,7 @@ namespace namaichi
 			this.isFromLastTimeRadioBtn.TabStop = true;
 			this.isFromLastTimeRadioBtn.Text = "前回の続きから録画";
 			this.isFromLastTimeRadioBtn.UseVisualStyleBackColor = true;
+			this.isFromLastTimeRadioBtn.Visible = false;
 			// 
 			// isStartTimeRadioBtn
 			// 
@@ -195,7 +198,7 @@ namespace namaichi
 			this.isStartTimeRadioBtn.Size = new System.Drawing.Size(182, 18);
 			this.isStartTimeRadioBtn.TabIndex = 0;
 			this.isStartTimeRadioBtn.TabStop = true;
-			this.isStartTimeRadioBtn.Text = "録画開始時間を指定";
+			this.isStartTimeRadioBtn.Text = "視聴開始時間を指定";
 			this.isStartTimeRadioBtn.UseVisualStyleBackColor = true;
 			this.isStartTimeRadioBtn.CheckedChanged += new System.EventHandler(this.isStartTimeRadioBtn_CheckedChanged);
 			// 
@@ -234,7 +237,7 @@ namespace namaichi
 			this.groupBox2.Size = new System.Drawing.Size(299, 62);
 			this.groupBox2.TabIndex = 27;
 			this.groupBox2.TabStop = false;
-			this.groupBox2.Text = "録画終了時間";
+			this.groupBox2.Text = "視聴終了時間";
 			// 
 			// label1
 			// 
@@ -242,7 +245,7 @@ namespace namaichi
 			this.label1.Name = "label1";
 			this.label1.Size = new System.Drawing.Size(234, 16);
 			this.label1.TabIndex = 9;
-			this.label1.Text = "0時間0分0秒を指定すると最後まで録画します";
+			this.label1.Text = "0時間0分0秒を指定すると最後まで視聴します";
 			// 
 			// label6
 			// 
@@ -424,9 +427,11 @@ namespace namaichi
 			this.Controls.Add(this.groupBox3);
 			this.Controls.Add(this.groupBox2);
 			this.Controls.Add(this.groupBox1);
+			this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.Fixed3D;
+			this.MaximizeBox = false;
 			this.Name = "TimeShiftOptionForm";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
-			this.Text = "タイムシフト録画設定";
+			this.Text = "タイムシフト視聴設定";
 			this.groupBox1.ResumeLayout(false);
 			this.groupBox1.PerformLayout();
 			this.groupBox2.ResumeLayout(false);
