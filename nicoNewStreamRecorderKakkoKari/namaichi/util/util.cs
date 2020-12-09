@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
@@ -107,7 +107,7 @@ class util {
 		var name = getFileName(host, group, title, lvId, communityNum,  cfg, _openTime);
 		if (name.Length > 200) name = name.Substring(0, 200);
 		
-		//’·‚¢ƒpƒX’²®
+		//é•·ã„ãƒ‘ã‚¹èª¿æ•´
 		if (name.Length + dirPath.Length > 234) {
 			name = lvId;
 			if (name.Length + dirPath.Length > 234 && sfn != null) {
@@ -202,15 +202,15 @@ class util {
 	public static string getOkFileName(string name, bool isRtmp) {
 		if (isRtmp) name = getOkSJisOut(name);
 		
-		name = name.Replace("\\", "");
-		name = name.Replace("/", "^");
-		name = name.Replace(":", "F");
-		name = name.Replace("*", "–");
-		name = name.Replace("?", "H");
-		name = name.Replace("\"", "h");
-		name = name.Replace("<", "ƒ");
-		name = name.Replace(">", "„");
-		name = name.Replace("|", "b");
+		name = name.Replace("\\", "ï¿¥");
+		name = name.Replace("/", "ï¼");
+		name = name.Replace(":", "ï¼š");
+		name = name.Replace("*", "ï¼Š");
+		name = name.Replace("?", "ï¼Ÿ");
+		name = name.Replace("\"", "â€");
+		name = name.Replace("<", "ï¼œ");
+		name = name.Replace(">", "ï¼");
+		name = name.Replace("|", "ï½œ");
 		/*
 		string[] replaceCharacter = {"\\", "/", ":", "*", "?", "\"", "<", ">", "|"};
 		foreach (string s in replaceCharacter) {
@@ -238,7 +238,7 @@ class util {
 		var _hiduke = getUnixToDatetime(_openTime);
 		var month = (_hiduke.Month < 10) ? ("0" + _hiduke.Month.ToString()) : (_hiduke.Month.ToString());
 		var day = (_hiduke.Day < 10) ? ("0" + _hiduke.Day.ToString()) : (_hiduke.Day.ToString());
-		var hiduke = _hiduke.Year + "”N" + month + "Œ" + day + "“ú";
+		var hiduke = _hiduke.Year + "å¹´" + month + "æœˆ" + day + "æ—¥";
 		if (n == null) n = "1";
 		if (n == "1") return host + "_" + communityNum + "(" + group + ")_" + lvId + "(" + title + ")";
 		else if (n == "2") return communityNum + "(" + group + ")_" + host + "_" + lvId + "(" + title + ")";
@@ -292,7 +292,7 @@ class util {
 	}
 	public static string getFileNameTypeSample(string filenametype) {
 			//var format = cfg.get("filenameformat");
-			return getDokujiSetteiFileName("•ú‘—Ò–¼", "ƒRƒ~ƒ…–¼", "ƒ^ƒCƒgƒ‹", "lv12345", "co9876", filenametype, DateTime.Now);
+			return getDokujiSetteiFileName("æ”¾é€è€…å", "ã‚³ãƒŸãƒ¥å", "ã‚¿ã‚¤ãƒˆãƒ«", "lv12345", "co9876", filenametype, DateTime.Now);
 		}
 	public static string getOkCommentFileName(config cfg, string fName, string lvid, bool isTimeShift, bool isRtmp) {
 		var kakutyousi = (cfg.get("IsgetcommentXml") == "true") ? ".xml" : ".json";
@@ -343,7 +343,7 @@ class util {
 		
 		util.debugWriteLine("getLastTimeshiftFileName name " + name);
 		                    
-		//’·‚¢ƒpƒX’²®
+		//é•·ã„ãƒ‘ã‚¹èª¿æ•´
 		if (name.Length + dirPath.Length > 234) {
 			name = lvId;
 			if (name.Length + dirPath.Length > 234 && sfn != null) {
@@ -659,8 +659,8 @@ class util {
 //			util.debugWriteLine("isendedprogram res " + res + util.getMainSubStr(isSub, true));
 		if (res == null) return false;
 		var isEnd = res.IndexOf("\"content_status\":\"closed\"") != -1 ||
-				res.IndexOf("<title>”Ô‘g‚ª‚İ‚Â‚©‚è‚Ü‚¹‚ñ") != -1 ||
-				res.IndexOf("”Ô‘g‚ªŒ©‚Â‚©‚è‚Ü‚¹‚ñ</span>") != -1;
+				res.IndexOf("<title>ç•ªçµ„ãŒã¿ã¤ã‹ã‚Šã¾ã›ã‚“") != -1 ||
+				res.IndexOf("ç•ªçµ„ãŒè¦‹ã¤ã‹ã‚Šã¾ã›ã‚“</span>") != -1;
 		util.debugWriteLine("is ended program " + isEnd + util.getMainSubStr(isSub, true));
 		return isEnd; 
 	}
@@ -702,13 +702,13 @@ class util {
 			var status = (data == null) ? null : util.getRegGroup(data, "&quot;status&quot;:&quot;(.+?)&quot;");
 			if (res.IndexOf("<!doctype html>") > -1 && data != null && status == "ON_AIR" && data.IndexOf("webSocketUrl&quot;:&quot;ws") > -1) return 0;
 			else if (res.IndexOf("<!doctype html>") > -1 && data != null && status == "ENDED" && data.IndexOf("webSocketUrl&quot;:&quot;ws") > -1) return 7;
-			else if (util.getRegGroup(res, "(¬G’†‚Å‚·‚ªAƒvƒŒƒ~ƒAƒ€‰ïˆõ‚Ì•û‚Í—Dæ‚µ‚Ä“üê‚ª‚Å‚«‚Ü‚·)") != null ||
-			        util.getRegGroup(res, "(‚½‚¾‚¢‚ÜA–ˆõ‚Ì‚½‚ß“üê‚Å‚«‚Ü‚¹‚ñ)") != null) return 1;
-	//		else if (util.getRegGroup(res, "<div id=\"comment_arealv\\d+\">[^<]+‚±‚Ì”Ô‘g‚Í\\d+/\\d+/\\d+\\(.\\) \\d+:\\d+‚ÉI—¹‚¢‚½‚µ‚Ü‚µ‚½B<br>") != null) return 2;
+			else if (util.getRegGroup(res, "(æ··é›‘ä¸­ã§ã™ãŒã€ãƒ—ãƒ¬ãƒŸã‚¢ãƒ ä¼šå“¡ã®æ–¹ã¯å„ªå…ˆã—ã¦å…¥å ´ãŒã§ãã¾ã™)") != null ||
+			        util.getRegGroup(res, "(ãŸã ã„ã¾ã€æº€å“¡ã®ãŸã‚å…¥å ´ã§ãã¾ã›ã‚“)") != null) return 1;
+	//		else if (util.getRegGroup(res, "<div id=\"comment_arealv\\d+\">[^<]+ã“ã®ç•ªçµ„ã¯\\d+/\\d+/\\d+\\(.\\) \\d+:\\d+ã«çµ‚äº†ã„ãŸã—ã¾ã—ãŸã€‚<br>") != null) return 2;
 			else if (res.IndexOf(" onclick=\"Nicolive.ProductSerial") > -1) return 8;
-			//else if (res.IndexOf("¦‚±‚Ì•ú‘—‚Íƒ^ƒCƒ€ƒVƒtƒg‚É‘Î‰‚µ‚Ä‚¨‚è‚Ü‚¹‚ñB") > -1 && 
-			//         res.IndexOf("‚ÉI—¹‚¢‚½‚µ‚Ü‚µ‚½") > -1) return 2;
-			//else if (util.getRegGroup(res, "(ƒRƒ~ƒ…ƒjƒeƒBƒtƒHƒƒ[ŒÀ’è”Ô‘g‚Å‚·B<br>)") != null) return 4;
+			//else if (res.IndexOf("â€»ã“ã®æ”¾é€ã¯ã‚¿ã‚¤ãƒ ã‚·ãƒ•ãƒˆã«å¯¾å¿œã—ã¦ãŠã‚Šã¾ã›ã‚“ã€‚") > -1 && 
+			//         res.IndexOf("ã«çµ‚äº†ã„ãŸã—ã¾ã—ãŸ") > -1) return 2;
+			//else if (util.getRegGroup(res, "(ã‚³ãƒŸãƒ¥ãƒ‹ãƒ†ã‚£ãƒ•ã‚©ãƒ­ãƒ¯ãƒ¼é™å®šç•ªçµ„ã§ã™ã€‚<br>)") != null) return 4;
 			else if (res.IndexOf("isFollowerOnly&quot;:true") > -1 && res.IndexOf("isFollowed&quot;:false") > -1) return 4;
 			else if (status == "ENDED" && res.IndexOf("rejectedReasons&quot;:[&quot;notHaveTimeshiftTicket") > -1) return 9;
 			else if (status == "ENDED" && res.IndexOf("rejectedReasons&quot;:[&quot;notUseTimeshiftTicket") > -1) return 10;
@@ -717,12 +717,12 @@ class util {
 			else if (res.IndexOf("rejectedReasons&quot;:[&quot;notHavePayTicket") > -1) return 11;
 			//else if (status == "ENDED" && res.IndexOf(" onclick=\"Nicolive.WatchingReservation") > -1) return 9;
 			
-			//else if (util.getRegGroup(res, "(‚ÉI—¹‚¢‚½‚µ‚Ü‚µ‚½)") != null) return 2;
+			//else if (util.getRegGroup(res, "(ã«çµ‚äº†ã„ãŸã—ã¾ã—ãŸ)") != null) return 2;
 			else if (status == "ENDED") return 2;
 			else if (util.getRegGroup(res, "(<archive>1</archive>)") != null) return 3;
-			else if (util.getRegGroup(res, "(ƒ`ƒƒƒ“ƒlƒ‹‰ïˆõŒÀ’è”Ô‘g‚Å‚·B<br>)") != null) return 4;
-			else if (util.getRegGroup(res, "(<h3>y‰ïê‚Ì‚²ˆÄ“àz</h3>)") != null) return 6;
-			else if (util.getRegGroup(res, "(‚±‚Ì”Ô‘g‚Í•ú‘—Ò‚É‚æ‚èíœ‚³‚ê‚Ü‚µ‚½B<br />|íœ‚³‚ê‚½‰Â”\«‚ª‚ ‚è‚Ü‚·B<br />)") != null) return 2;
+			else if (util.getRegGroup(res, "(ãƒãƒ£ãƒ³ãƒãƒ«ä¼šå“¡é™å®šç•ªçµ„ã§ã™ã€‚<br>)") != null) return 4;
+			else if (util.getRegGroup(res, "(<h3>ã€ä¼šå ´ã®ã”æ¡ˆå†…ã€‘</h3>)") != null) return 6;
+			else if (util.getRegGroup(res, "(ã“ã®ç•ªçµ„ã¯æ”¾é€è€…ã«ã‚ˆã‚Šå‰Šé™¤ã•ã‚Œã¾ã—ãŸã€‚<br />|å‰Šé™¤ã•ã‚ŒãŸå¯èƒ½æ€§ãŒã‚ã‚Šã¾ã™ã€‚<br />)") != null) return 2;
 			return 5;
 		//}
 		//return 5;
@@ -770,7 +770,7 @@ class util {
 		var minute = ((int)((seconds % 3600 / 60))).ToString("00");
 		var hour = ((int)((seconds / 3600) * 1));
 		var _hour = (hour < 100) ? hour.ToString("00") : hour.ToString();;
-		return _hour + "ŠÔ" + minute + "•ª" + second + "•b";
+		return _hour + "æ™‚é–“" + minute + "åˆ†" + second + "ç§’";
 	}
 	public static void writeFile(string name, string str) {
 		using (var f = new System.IO.FileStream(name, FileMode.Append))
@@ -931,7 +931,7 @@ class util {
     return -1;
    }
 	public static string getMainSubStr(bool isSub, bool isKakko = false) {
-		var ret = (isSub) ? "ƒTƒu" : "ƒƒCƒ“";
+		var ret = (isSub) ? "ã‚µãƒ–" : "ãƒ¡ã‚¤ãƒ³";
 		if (isKakko) ret = "(" + ret + ")";
 		return ret;		
 	}
