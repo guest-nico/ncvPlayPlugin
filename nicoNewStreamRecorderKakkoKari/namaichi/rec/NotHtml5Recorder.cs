@@ -11,7 +11,7 @@ using System.ComponentModel;
 using System.Net;
 using System.Threading.Tasks;
 using System.IO;
-
+/*
 namespace namaichi.rec
 {
 	/// <summary>
@@ -58,12 +58,11 @@ namespace namaichi.rec
 				var rec = new Record(rm, isFFmpeg, rfu, "", "", 0, null, false, null, null, null, 0, null, null, false);
 				commentGetter = new NotHtmlCommentGetter(messageInfo, rm, rfu, recFolderFile);
 				
-				/*
-				var recTask = Task.Run(() => rec.recordCommand(command));
-				var commentTask = Task.Run(() => commentGetter.start());
-				recTask.Wait();
-				commentGetter.close();
-				*/
+				//var recTask = Task.Run(() => rec.recordCommand(command));
+				//var commentTask = Task.Run(() => commentGetter.start());
+				//recTask.Wait();
+				//commentGetter.close();
+				
 				System.Threading.Thread.Sleep(3000);
 		       
 		        getPlayerStatusInfo = getGetPlayerStatusInfo();
@@ -238,38 +237,6 @@ namespace namaichi.rec
 		public Boolean start() {
 			util.debugWriteLine("comment start");
 			
-			/*
-			Socket s = null;
-			BufferedReader br = null;
-			BufferedWriter bw = null;
-			BufferedWriter fileBw = null;
-			try {
-				s = new Socket(messageInfo[0], Integer.valueOf(messageInfo[1]));
-				br = new BufferedReader(new InputStreamReader(s.getInputStream()));
-				bw = new BufferedWriter(new OutputStreamWriter(s.getOutputStream()));
-				fileBw = new BufferedWriter(new FileWriter(recFolderFileInfo[1] + ".xml", true));
-				
-				bw.write("<thread thread=\"" + messageInfo[2] + "\" version=\"20061206\" res_from=\"-10\" scores=\"1\" />\0");
-				bw.flush();
-				
-				while(isAlive && gui.recBtn.getText() == "stop") {
-					char a = (char)br.read();
-					if (a == -1) break;
-					if (a == 0) a = '\n';
-					fileBw.write(a);
-					if (a == '\n') fileBw.flush();
-				}
-				
-				
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				s.close();
-				br.close();
-				bw.close();
-				fileBw.close();
-			}
-			*/
 			return true;
 		}
 		public void close() {
@@ -278,3 +245,4 @@ namespace namaichi.rec
 		}
 	}
 }
+*/
