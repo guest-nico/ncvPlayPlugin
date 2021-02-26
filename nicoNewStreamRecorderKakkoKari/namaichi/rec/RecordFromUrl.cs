@@ -30,6 +30,7 @@ namespace namaichi.rec
 		private bool isJikken = false;
 //		private JikkenRecorder jr;
 		private string lvid;
+		public string wssUrl = null;
 		public int[] tsRecNumArr;
 		public List<numTaskInfo> subGotNumTaskInfo = null;
 		public string[] id = new string[2];
@@ -46,11 +47,12 @@ namespace namaichi.rec
 	        //container.Add(cookie);
 			//this.container = container;
 		}
-		public int rec(string url, string lvid) {
+		public int rec(string url, string lvid, string wssUrl) {
 			//endcode 0-その他の理由 1-stop 2-最初に終了 3-始まった後に番組終了
 			util.debugWriteLine("RecordFromUrl rec");
 			util.debugWriteLine(url + " " + lvid);
-			this.lvid = util.getRegGroup(lvid, "(lv\\d+)");
+			if (lvid != null) this.lvid = util.getRegGroup(lvid, "(lv\\d+)");
+			this.wssUrl = wssUrl;
 			tsRecNumArr = (this.lvid == lvid) ? null : Array.ConvertAll<string, int>(util.getRegGroup(lvid, ",(.+)").Split(','), (i) => {return int.Parse(i);});
 			this.url = util.getRegGroup(url, "([^,]+)");
 			
@@ -88,9 +90,11 @@ namespace namaichi.rec
 			JikkenRecorder jr = null;
 			RtmpRecorder rr = null;
 			var isRtmp = !isSubAccountHokan && (isRtmpMain || isSub);
-			CookieContainer cc;
+			CookieContainer cc = null;
 			
-			var pageType = this.getPageType(url, true, isSub, ref jr, out cc);
+			var pageType = wssUrl == null ?
+					this.getPageType(url, true, isSub, ref jr, out cc) :
+					0;
 			container = cc;
 			if (pageType == -2 && isSub) return 2;
 			if (pageType == -1) return 2;
@@ -98,7 +102,7 @@ namespace namaichi.rec
 			//var ccInd = (isSub) ? 1 : 0;
 			var ccInd = 0;
 			util.debugWriteLine("pagetype " + pageType + " container " + cc + " isSub " + isSub);
-			if (cc == null || cc == null) {
+			if ((cc == null || cc == null) && wssUrl == null) {
 				rm.form.addLogText("ログインに失敗しました。");
 				if (bool.Parse(rm.cfg.get("IsmessageBox")) && util.isShowWindow) {
 					if (rm.form.IsDisposed) return 2;
@@ -134,6 +138,7 @@ namespace namaichi.rec
 			while (true && this == rm.rfu) {
 				util.debugWriteLine("pagetype " + pageType);
 				if (pageType == 0 || pageType == 7) {
+					if (wssUrl != null) res = "";
 					var isJikken = res.IndexOf("siteId&quot;:&quot;nicocas") > -1;
 					int recResult = 0;
 					

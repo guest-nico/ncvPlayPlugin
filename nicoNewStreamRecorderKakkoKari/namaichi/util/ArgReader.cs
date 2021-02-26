@@ -29,6 +29,7 @@ namespace namaichi.utility
 		public string allPathStr;
 		public Dictionary<string, string> argConfig = new Dictionary<string, string>();
 		public string lvid = null;
+		public string wssUrl = null;
 		public config.config config;
 		public TimeShiftConfig tsConfig;
 		public bool isPlayMode = false;
@@ -79,7 +80,11 @@ namespace namaichi.utility
 					//argConfig.Add(setName, setVal);
 					argConfig[setName] = setVal;
 				} else {
-					if (lvid == null) lvid = util.getRegGroup(a, "(lv\\d+(,\\d+)*)");
+					var _lvid = util.getRegGroup(a, "(lv\\d+(,\\d+)*)");
+					if (lvid == null && _lvid != null) lvid = _lvid;
+					
+					var _wssUrl = util.getRegGroup(a, "^(wss://[^,\\s]+)");
+					if (wssUrl == null && _wssUrl != null) wssUrl = _wssUrl;
 				}
 			}
 		}

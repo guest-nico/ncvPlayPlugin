@@ -75,15 +75,15 @@ namespace namaichi.rec
 			
 		}
 		*/
-		public string[] getWebSocketInfo(string data, bool isRtmp, MainForm form, string _latency) {
+		public string[] getWebSocketInfo(string data, bool isRtmp, MainForm form, string _latency, string wssUrl) {
 //			util.debugWriteLine(data);
-			var wsUrl = util.getRegGroup(data, "\"webSocketUrl\":\"([\\d\\D]+?)\"");
+			var wsUrl = wssUrl == null ? util.getRegGroup(data, "\"webSocketUrl\":\"([\\d\\D]+?)\"") : wssUrl;
 			var latency = float.Parse(_latency);
 			wsUrl += "&frontend_id=" + (latency % 1 == 0 || isRtmp ? "90" : "12");
 			
 			util.debugWriteLine("wsurl " + wsUrl + util.getMainSubStr(isSub));
 			//var broadcastId = util.getRegGroup(wsUrl, "/(\\d+)\\?");
-			var broadcastId = util.getRegGroup(data, "\"broadcastId\"\\:\"(\\d+)\"");
+			var broadcastId = data != null ? util.getRegGroup(data, "\"broadcastId\"\\:\"(\\d+)\"") : "";
 			util.debugWriteLine("broadcastid " + broadcastId + util.getMainSubStr(isSub));
 			
 			if (isRtmp) {
@@ -225,6 +225,7 @@ namespace namaichi.rec
 			while(rm.rfu == rfu) {
 				var type = util.getRegGroup(res, "\"content_type\":\"(.+?)\"");
 				var data = util.getRegGroup(res, "<script id=\"embedded-data\" data-props=\"([\\d\\D]+?)</script>");
+				
 				var isRtmpOnlyPage = res.IndexOf("%3Cgetplayerstatus%20") > -1;
 				if (isRtmpOnlyPage) isRtmp = true;
 				if (isRtmpOnlyPage && isTimeShift) rm.hlsUrl = "timeshift";
@@ -232,7 +233,7 @@ namespace namaichi.rec
 //				var pageType = pageType;
 				util.debugWriteLine("pagetype " + pageType + util.getMainSubStr(isSub));
 				
-				if ((data == null && !isRtmpOnlyPage) || (pageType != 0 && pageType != 7)) {
+				if (((data == null && !isRtmpOnlyPage) || (pageType != 0 && pageType != 7)) && url.IndexOf("wss://") == -1) {
 					//processType 0-ok 1-retry 2-放送終了 3-その他の理由の終了
 					var processType = processFromPageType(pageType);
 					util.debugWriteLine("processType " + processType + util.getMainSubStr(isSub));
@@ -254,7 +255,7 @@ namespace namaichi.rec
 //				DateTime programTime, jisa;
 				openTime = endTime = _openTime = serverTime = 0;
 				
-				if (!getTimeInfo(data, ref openTime, ref endTime, 
+				if (rfu.wssUrl == null && !getTimeInfo(data, ref openTime, ref endTime, 
 						ref _openTime, ref serverTime, isRtmpOnlyPage))
 					return 3;
 				
@@ -264,13 +265,13 @@ namespace namaichi.rec
 				var latency = rm.form.getLatencyText();
 	
 				//0-wsUrl 1-request
-				webSocketRecInfo = getWebSocketInfo(data, isRtmp, rm.form, latency);
+				webSocketRecInfo = getWebSocketInfo(data, isRtmp, rm.form, latency, rfu.wssUrl);
 				util.debugWriteLine("websocketrecinfo " + webSocketRecInfo);
 				if (webSocketRecInfo == null && !isRtmpOnlyPage) continue;
 				
 				util.debugWriteLine("isnopermission " + isNoPermission);
 //				if (isNoPermission) webSocketRecInfo[1] = webSocketRecInfo[1].Replace("\"requireNewStream\":false", "\"requireNewStream\":true");
-				recFolderFileInfo = getHtml5RecFolderFileInfo(data, type, isRtmpOnlyPage);
+				//recFolderFileInfo = getHtml5RecFolderFileInfo(data, type, isRtmpOnlyPage);
 				
 				if (!isSub) {
 					//timeshift option

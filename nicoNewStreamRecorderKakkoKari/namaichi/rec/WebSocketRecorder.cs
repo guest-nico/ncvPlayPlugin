@@ -762,7 +762,7 @@ namespace namaichi.rec
 				container = cgTask.Result[0];
 				res = util.getPageSource(h5r.url, container, null, false, 5000);
 				res = System.Web.HttpUtility.HtmlDecode(res);
-				var _webSocketInfo = h5r.getWebSocketInfo(res, isRtmp, rm.form, rm.form.getLatencyText());
+				var _webSocketInfo = h5r.getWebSocketInfo(res, isRtmp, rm.form, rm.form.getLatencyText(), rfu.wssUrl);
 				isNoPermission = true;
 				addDebugBuf("isendprogram login websocketInfo " + webSocketInfo[0] + " " + webSocketInfo[1]);
 				if (_webSocketInfo[0] == null || _webSocketInfo[1] == null) {
@@ -818,7 +818,7 @@ namespace namaichi.rec
 				container = cgTask.Result[0];
 				var res = util.getPageSource(h5r.url, container, null, false, 5000);
 				res = System.Web.HttpUtility.HtmlDecode(res);
-				var _webSocketInfo = h5r.getWebSocketInfo(res, isRtmp, rm.form, rm.form.getLatencyText());
+				var _webSocketInfo = h5r.getWebSocketInfo(res, isRtmp, rm.form, rm.form.getLatencyText(), rfu.wssUrl);
 				isNoPermission = true;
 				addDebugBuf("resetWebsocketInfo " + _webSocketInfo[0] + " " + _webSocketInfo[1]);
 				if (_webSocketInfo[0] == null || _webSocketInfo[1] == null) {

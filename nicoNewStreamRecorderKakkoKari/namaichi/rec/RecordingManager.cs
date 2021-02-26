@@ -70,6 +70,7 @@ namespace namaichi.rec
            
             
             var lv = util.getRegGroup(form.urlText.Text, "(lv\\d+(,\\d+)*)");
+            var wssUrl = util.getRegGroup(form.urlText.Text, "^(wss://[^,\\s]+)");
 			util.setLog(cfg, lv);
 			util.debugWriteLine(util.versionStr + " " + util.versionDayStr);
 			
@@ -80,17 +81,17 @@ namespace namaichi.rec
             	
 
 				var lvid = lv;//util.getRegGroup(form.urlText.Text, "(lv\\d+(,\\d+)*)", 1);
-				if (lvid != null) {
+				if (lvid != null || wssUrl != null) {
+					var url = lvid != null ? ("http://live2.nicovideo.jp/watch/" + lvid) : wssUrl;
 					if (isPlayOnlyMode) {
-						
 						form.Invoke((MethodInvoker)delegate() {
-							form.urlText.Text = "http://live2.nicovideo.jp/watch/" + lvid;
+							form.urlText.Text = url; 
 						});
-					} else form.urlText.Text = "http://live2.nicovideo.jp/watch/" + lvid;
-				}
+					} else form.urlText.Text = url;
+				
 //				if (lvid != null) form.urlText.Text = "https://cas.nicovideo.jp/user/77252622/lv313508832";
 				
-				else {
+				} else {
 					if (isPlayOnlyMode) {
 						form.Invoke((MethodInvoker)delegate() {
 							MessageBox.Show("not found lvid");
@@ -134,7 +135,7 @@ namespace namaichi.rec
 					    var rfuCode = rfu.GetHashCode();
 					    recordRunningList.Add(rfuCode);
 					    //endcode 0-その他の理由 1-stop 2-最初に終了 3-始まった後に番組終了
-	                	var endCode = rfu.rec(form.urlText.Text, lvid);
+	                	var endCode = rfu.rec(form.urlText.Text, lvid, wssUrl);
 	                	util.debugWriteLine("endcode " + endCode);
 	                	recordRunningList.Remove(rfuCode);
 	                	

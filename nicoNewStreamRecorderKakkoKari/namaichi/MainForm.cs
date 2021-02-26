@@ -57,7 +57,6 @@ namespace namaichi
 		public MainForm(string[] args)
 		{
 			madeThread = Thread.CurrentThread;
-			//args = "-nowindo -stdIO -IsmessageBox=false -IscloseExit=true lv316762771 -ts-start=1785s -ts-end=0s -ts-list=false -ts-list-m3u8=false -ts-list-update=5 -ts-list-open=false -ts-list-command=\"notepad{i}\" -ts-vpos-starttime=true -afterConvertMode=4 -qualityRank=0,1,2,3,4,5 -IsLogFile=true".Split(' ');
 			
 			#if !DEBUG
 				FormBorderStyle = FormBorderStyle.FixedSingle;
@@ -97,6 +96,17 @@ namespace namaichi
 				Height = 201;
 			} catch (Exception e) {
 				util.debugWriteLine(e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
+			}
+			try {
+				var x = config.get("X");
+				var y = config.get("Y");
+				if (x != "" && y != "") {
+					StartPosition = FormStartPosition.Manual;
+					Location = new Point(int.Parse(x), int.Parse(y));
+				}
+			} catch (Exception e) {
+				util.debugWriteLine(e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
+				StartPosition = FormStartPosition.WindowsDefaultLocation;
 			}
 			
 			setBackColor(Color.FromArgb(int.Parse(config.get("recBackColor"))));
@@ -254,26 +264,6 @@ namespace namaichi
        		addLogText(t);
         }
 		
-        private void initRec() {
-        	//util.debugWriteLine(int.Parse(config.get("browserName")));
-        	//util.debugWriteLine(bool.Parse(config.get("isAllBrowserMode")));
-        	
-        	//try {
-        	//	nicoSessionComboBox1.SelectedIndex = int.Parse(config.get("browserNum"));
-        	//} catch (Exception e) {util.debugWriteLine(333); return;};
-        	//var t = getCookie();
-			//t.ConfigureAwait(false);
-			//util.debugWriteLine(t.Result);
-            if (args.Length > 0) {
-            	urlText.Text = args[0];
-//            	rec = new rec.RecordingManager(this);
-            	rec.rec();
-
-            }
-			
-			isInitRun = false;
-        }
-		
 		void endMenu_Click(object sender, EventArgs e)
 		{
 			try {
@@ -300,9 +290,13 @@ namespace namaichi
 				if (this.WindowState == FormWindowState.Normal) {
 					config.set("Width", Width.ToString());
 					config.set("Height", Height.ToString());
+					config.set("X", Location.X.ToString());
+					config.set("Y", Location.Y.ToString());
 				} else {
 					config.set("Width", RestoreBounds.Width.ToString());
 					config.set("Height", RestoreBounds.Height.ToString());
+					config.set("X", RestoreBounds.X.ToString());
+					config.set("Y", RestoreBounds.Y.ToString());
 				}
 
 			} catch(Exception e) {
@@ -376,8 +370,8 @@ namespace namaichi
 					rec.argTsConfig = ar.tsConfig;
 					rec.isRecording = true;
 //					rec.setArgConfig(args);
-					if (ar.lvid != null) {
-						urlText.Text = ar.lvid;
+					if (ar.lvid != null || ar.wssUrl != null) {
+						urlText.Text = ar.lvid != null ? ar.lvid : ar.wssUrl;
 						player.play();
 					}
 					
@@ -389,6 +383,8 @@ namespace namaichi
 				}
             }
 			setLatencyListText(config.get("latency"));
+			
+			startStdRead();
 		}
 		
 		void versionMenu_Click(object sender, EventArgs e)
@@ -404,7 +400,11 @@ namespace namaichi
 					if (a == null || a.Length == 0) continue;
 					util.debugWriteLine("std in " + a);
 					var lvid = util.getRegGroup(a, "(lv\\d+)");
-					if (lvid != null && urlText.Enabled) urlText.Text = lvid; 
+					var _wssUrl = util.getRegGroup(a, "(wss://[^,\\s]+)");
+					if ((lvid != null || _wssUrl != null) && urlText.Enabled) {
+						urlText.Text = lvid != null ? lvid : _wssUrl;
+						player.play();
+					}
 				}
 			});
 		}
