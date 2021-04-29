@@ -12,9 +12,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
-
+using System.Windows.Forms;
 using SunokoLibrary.Windows.Forms;
+
 namespace namaichi
 {
 	using SunokoLibrary.Application;
@@ -28,14 +30,12 @@ namespace namaichi
 #pragma warning disable 1591
         protected override void InitLayout()
         {
+        	nscb = this;
             base.InitLayout();
-            try {
-            	Initialize(new CookieSourceSelector(CookieGetters.Default, importer => new NicoAccountSelectorItem(importer)));
-            } catch (Exception e) {
-            	
-            }
+            Initialize(new CookieSourceSelector(CookieGetters.Default, importer => new NicoAccountSelectorItem(importer)));
         }
 #pragma warning restore 1591
+		public static NicoSessionComboBox2 nscb = null;
 
         class NicoAccountSelectorItem : CookieSourceItem
         {
@@ -56,7 +56,7 @@ namespace namaichi
                 protected set
                 {
                     _displayText = value;
-                    OnPropertyChanged();
+                   	OnPropertyChanged();
                 }
             }
             public async override void Initialize()
@@ -66,38 +66,65 @@ namespace namaichi
                     Importer.SourceInfo.BrowserName,
                     Importer.SourceInfo.ProfileName.ToLowerInvariant() == "default" ? string.Empty : string.Format(" {0}", Importer.SourceInfo.ProfileName));
                 DisplayText = string.Format("{0} (loading...)", baseText);
-                AccountName = await GetUserName(Importer);
-                DisplayText = string.IsNullOrEmpty(AccountName) == false
-                    ? string.Format("{0} ({1})", baseText, AccountName) : baseText;
+                await Task.Factory.StartNew(async () => {
+	                AccountName = await GetUserName(Importer);
+	                
+	                try {
+	                	if (nscb != null && !nscb.IsDisposed) {
+	                		nscb.BeginInvoke((MethodInvoker)delegate() {
+								DisplayText = string.IsNullOrEmpty(AccountName) == false
+					                    ? string.Format("{0} ({1})", baseText, AccountName) : baseText;
+							});
+	                	}
+					} catch (Exception e) {
+						util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+					} 
+		                
+	                
+				});
             }
             static async Task<string> GetUserName(ICookieImporter cookieImporter)
             {
                 try
                 {
-                    var url = new Uri("http://www.nicovideo.jp/my/channel");
+                    var myPage = new Uri("https://www.nicovideo.jp/my/channel");
+                    
                     var container = new CookieContainer();
-                    var client = new HttpClient(new HttpClientHandler() { CookieContainer = container });
-                    var result = await cookieImporter.GetCookiesAsync(url);
+                    container.PerDomainCapacity = 200;
+                    var client = new HttpClient(new HttpClientHandler() { CookieContainer = container, Proxy = null, UseProxy = true });
+                    
+                    var result = await cookieImporter.GetCookiesAsync(myPage);
                     
 					if (result.Status != CookieImportState.Success) return null;
                     foreach(Cookie c in result.Cookies) {
                     	if (Regex.IsMatch(c.Name, "[^0-9a-zA-Z\\._\\-\\[\\]%#&=\":\\{\\} \\(\\)/\\?\\|]") ||
                     	   		Regex.IsMatch(c.Value, "[^0-9a-zA-Z\\._\\-\\[\\]%#&=\":\\{\\} \\(\\)/\\?\\|]")) {
-                    		System.Diagnostics.Debug.WriteLine(c.Name + " " + c.Value);
+                    		util.debugWriteLine(c.Name + " " + c.Value);
                     		continue;
                     	}
+						if (c.Name != "user_session") continue;
                     	try {
                     		container.Add(new Cookie(c.Name, c.Value, c.Path, c.Domain));
                     	} catch (Exception e) {
-                    		System.Diagnostics.Debug.WriteLine(e.Message + e.StackTrace + e.TargetSite + e.Source);
+                    		util.debugWriteLine(e.Message + e.StackTrace + e.TargetSite + e.Source);
                     	}
 	        			
 	        		}
                     
 //                    if (result.AddTo(container) != CookieImportState.Success)
 //                        return null;
-
-                    var res = await client.GetStringAsync(url);
+					
+					var us = container.GetCookies(myPage)["user_session"];
+					if (us == null) {
+						return null;
+					}
+					
+					var n = util.getMyName(container, us.Value);
+					return n;
+					
+					/*
+					//if (n != null) return n;
+                    var res = await client.GetStringAsync(myPage);
                     if (string.IsNullOrEmpty(res))
                         return null;
                     var namem = Regex.Match(res, "nickname = \"([^<>]+)\";", RegexOptions.Singleline);
@@ -105,6 +132,8 @@ namespace namaichi
                         return namem.Groups[1].Value;
                     else
                         return null;
+                    */
+                    
                 }
                 catch (System.Net.Http.HttpRequestException) { return null; }
             }

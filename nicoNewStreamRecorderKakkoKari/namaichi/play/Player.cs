@@ -37,13 +37,13 @@ namespace namaichi.play
 		private defaultFFplayController ctrl = null;
 		//private commentForm commentForm = null;
 		private bool isDefaultPlayer = false;
-		private bool isDefaultCommentPlayer = false;
+		//private bool isDefaultCommentPlayer = false;
 		
-		private bool isRecording = false;
+		//private bool isRecording = false;
 		public bool isReconnect = false;
 		
 		private bool isUsePlayer = false;
-		private bool isUseCommentViewer = false;
+		//private bool isUseCommentViewer = false;
 		
 		public StreamWriter pipeWriter;
 		
@@ -56,7 +56,7 @@ namespace namaichi.play
 		public void play() {
 			util.debugWriteLine("play");
 			isUsePlayer = true;
-			isUseCommentViewer = false;
+			//isUseCommentViewer = false;
 			
 			if (form.playerBtn.Text == "視聴") {
 				setPlayerBtnText("視聴停止");
@@ -99,7 +99,7 @@ namespace namaichi.play
 			});
 		}
 		private void videoPlay(bool isStart) {
-			isRecording = true;
+			//isRecording = true;
 			isDefaultPlayer = false;
 			var rfu = form.rec.rfu;
 			if (isStart) {
@@ -179,7 +179,7 @@ namespace namaichi.play
 				    	
 						break;
 					}
-				    isRecording = false;
+				    //isRecording = false;
 				    if (rfu == form.rec.rfu)
 				    	setPlayerBtnText("視聴");
 				    
@@ -405,7 +405,7 @@ namespace namaichi.play
 				if (res != null && pageType != 0) isRtmpEnd = true;;
 				if (res != null && res.IndexOf("http") > -1) return true; 
 			} catch (Exception e) {
-				
+				util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
 			}
 			return false;
 		}

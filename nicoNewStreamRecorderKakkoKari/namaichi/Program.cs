@@ -7,8 +7,8 @@
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
+using System.Diagnostics;
 using System.Windows.Forms;
-
 
 namespace namaichi
 {
@@ -76,6 +76,7 @@ namespace namaichi
 			try {
 				frameCount = new System.Diagnostics.StackTrace().FrameCount;
 			} catch (StackOverflowException ee) {
+				Debug.WriteLine(ee.Message + ee.Source + ee.StackTrace + ee.TargetSite);
 				return;
 			}
 			#if DEBUG

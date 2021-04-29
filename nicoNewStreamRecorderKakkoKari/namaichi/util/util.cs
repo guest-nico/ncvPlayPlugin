@@ -22,10 +22,11 @@ class app {
 	}
 }
 class util {
-	public static string versionStr = "ver0.1.11";
-	public static string versionDayStr = "2021/02/26";
+	public static string versionStr = "ver0.1.12";
+	public static string versionDayStr = "2021/04/29";
 	public static bool isShowWindow = true;
 	public static bool isStdIO = false;
+	public static WebProxy httpProxy = null;
 	
 	public static string getRegGroup(string target, string reg, int group = 1, Regex r = null) {
 		if (r == null)
@@ -650,6 +651,61 @@ class util {
 		}
 		return null;
 	}
+	public static HttpWebResponse sendRequest(string url, Dictionary<string, string> headers, byte[] content, string method, CookieContainer cc = null) {
+		try {
+			var req = (HttpWebRequest)WebRequest.Create(url);
+			req.Method = method;
+			req.Proxy = httpProxy;
+			req.Headers.Add("Accept-Encoding", "gzip,deflate");
+			req.AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate;
+			req.CookieContainer = cc;
+			
+			if (headers != null) {
+				foreach (var h in headers) {
+					if (h.Key.ToLower().Replace("-", "") == "contenttype")
+						req.ContentType = h.Value;
+					else if (h.Key.ToLower().Replace("-", "") == "useragent")
+						req.UserAgent = h.Value;
+					else if (h.Key.ToLower().Replace("-", "") == "connection")
+						req.KeepAlive = h.Value.ToLower().Replace("-", "") == "keepalive";
+					else if (h.Key.ToLower().Replace("-", "") == "accept")
+						req.Accept = h.Value;
+					else if (h.Key.ToLower().Replace("-", "") == "referer")
+						req.Referer = h.Value;
+					else req.Headers.Add(h.Key, h.Value);
+				}
+			}
+				
+			if (content != null) {
+				using (var stream = req.GetRequestStream()) {
+					try {
+						stream.Write(content, 0, content.Length);
+					} catch (Exception ee) {
+			       		debugWriteLine(ee.Message + " " + ee.StackTrace + " " + ee.Source + " " + ee.TargetSite);
+			       	}
+				}
+			}
+//					stream.Close();
+
+			return (HttpWebResponse)req.GetResponse();
+			
+		} catch (WebException ee) {
+			util.debugWriteLine(ee.Data + ee.Message + ee.Source + ee.StackTrace + ee.Status);
+			try {
+				return (HttpWebResponse)ee.Response;
+				//using (var _rs = ee.Response.GetResponseStream())
+				//using (var rs = new StreamReader(_rs)) {
+				//	return rs.ReadToEnd();
+				//}
+			} catch (Exception eee) {
+				util.debugWriteLine(eee.Message + eee.Source + eee.StackTrace);
+				return null;
+			}
+		} catch (Exception ee) {
+			debugWriteLine(ee.Message + ee.Source + ee.StackTrace + ee.TargetSite);
+			return null;
+		}
+	}
 	public static bool isEndedProgram(string lvid, CookieContainer container, bool isSub) {
 		var url = "http://live2.nicovideo.jp/watch/" + lvid;
 		
@@ -934,5 +990,32 @@ class util {
 		var ret = (isSub) ? "サブ" : "メイン";
 		if (isKakko) ret = "(" + ret + ")";
 		return ret;		
+	}
+	public static string getMyName(CookieContainer cc, string us) {
+		try {
+			var url = "https://nvapi.nicovideo.jp/v1/users/me";
+			//var us = cc.GetCookies(new Uri(url))["user_session"];
+			//if (us == null) return null;
+			var _h = new Dictionary<string, string>() {
+				{"User-Agent", "Niconico/1.0 (Linux; U; Android 7.1.2; ja-jp; nicoandroid LGM-V300K) Version/6.14.1"},
+				{"Cookie", "user_session=" + us},
+					{"X-Frontend-Id", "1"},
+					{"X-Frontend-Version", "6.14.1"},
+					{"Connection", "keep-alive"},
+					{"Upgrade-Insecure-Requests", "1"},
+				};
+			var r = sendRequest(url, _h, null, "GET");
+				
+			if (r == null) return null;
+			using (var st = r.GetResponseStream())
+			using (var sr = new StreamReader(st)) {
+				var res = sr.ReadToEnd();
+				var n = util.getRegGroup(res, "\"nickname\":\"(.+?)\"");
+				return n;
+			}
+		} catch (Exception e) {
+			util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+		}
+		return null;
 	}
 }

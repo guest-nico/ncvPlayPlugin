@@ -689,7 +689,7 @@ namespace namaichi.rec
 			var qualityList = new List<string>{//"abr",
 				"super_high", "high",
 				"normal", "low", "super_low",
-				"audio_high"};
+				"audio_high", "6Mbps1080p30fps"};
 			
 			gettableList = webSocketInfo[2] == "1" ? 
 					util.getRegGroup(msg, "\"qualityTypes\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',')

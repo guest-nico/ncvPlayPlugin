@@ -9,6 +9,7 @@
 using System;
 using System.Configuration;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace namaichi.config {
@@ -109,6 +110,7 @@ public class config
 				return argConfig[key];
 			return cfg.AppSettings.Settings[key].Value;
 		} catch (Exception e) {
+			Debug.WriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
 			return null;
 		}
 	}
@@ -151,7 +153,7 @@ public class config
 			{"IsgetcommentXml","true"},
 			{"IstitlebarSamune","true"},
 			{"IsautoFollowComgen","false"},
-			{"qualityRank","0,1,2,3,4,5"},
+			{"qualityRank","0,1,2,3,4,5,6"},
 			{"IsLogFile","false"},
 			{"IsSegmentNukeInfo","true"},
 			{"segmentSaveType","0"},
@@ -198,7 +200,7 @@ public class config
 			{"rokugaTourokuWidth","950"},
 			{"rokugaTourokuHeight","500"},
 			{"rokugaTourokuMaxRecordingNum","10"},
-			{"rokugaTourokuQualityRank","0,1,2,3,4,5"},
+			{"rokugaTourokuQualityRank","0,1,2,3,4,5,6"},
 			{"X",""},
 			{"Y",""},
 			

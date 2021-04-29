@@ -13,21 +13,15 @@ using System.Windows.Forms;
 using System.Xml.Serialization;
 using System.ComponentModel;
 using SunokoLibrary.Application;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
-using System.Drawing;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Windows.Forms;
 using System.Configuration;
 using System.IO;
-using System.Text;
 using System.Threading;
 using namaichi.rec;
 using namaichi.config;
@@ -47,11 +41,11 @@ namespace namaichi
 		
 		
 		public rec.RecordingManager rec;
-		private bool isInitRun = true;
+		//private bool isInitRun = true;
 		private namaichi.config.config config = new namaichi.config.config();
 		private string[] args;
 		private play.Player player;
-		private string labelUrl;
+		//private string labelUrl;
 		private Thread madeThread;
 		
 		public MainForm(string[] args)
@@ -120,8 +114,13 @@ namespace namaichi
 				}
 			}
 			
-			if (config.get("qualityRank").Split(',').Length == 5)
-				config.set("qualityRank", config.get("qualityRank") + ",5"); 
+			var qr = config.get("qualityRank").Split(',').ToList();
+			var qrD = config.defaultConfig["qualityRank"].Split(',');
+			if (qr.Count != qrD.Length) {
+				foreach (var q in qrD) 
+					if (qr.IndexOf(q) == -1) qr.Add(q);
+			}
+			config.set("qualityRank", string.Join(",", qr.ToArray()));
 		}
 
 		private void recBtnAction(object sender, EventArgs e) {
@@ -263,7 +262,6 @@ namespace namaichi
         public void addLogTextTest(string t) {
        		addLogText(t);
         }
-		
 		void endMenu_Click(object sender, EventArgs e)
 		{
 			try {
@@ -514,7 +512,7 @@ namespace namaichi
 		{
 			util.debugWriteLine("quality box text Update " + qualityBox.SelectedIndex + " a " + qualityBox.Text + " b " + qualityBox.Tag);
 			if (qualityBox.Text == "") return;
-			if (qualityBox.Tag == "set") {
+			if (qualityBox.Tag != null && qualityBox.Tag.ToString() == "set") {
 				qualityBox.Tag = null;
 				return;
 			}

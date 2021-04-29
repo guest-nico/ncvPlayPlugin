@@ -24,7 +24,7 @@ namespace namaichi.Logger
 				var dt = DateTime.Now.ToLongTimeString();
 				base.WriteLine(dt + " " + msg);
 			} catch (Exception e) {
-				
+				Debug.WriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
 //				util.debugWriteLine("trace listner exception " + e.Message + e.Source + e.StackTrace + e.TargetSite);
 			}
 		}
