@@ -91,11 +91,11 @@ namespace namaichi
                     
                     var container = new CookieContainer();
                     container.PerDomainCapacity = 200;
-                    var client = new HttpClient(new HttpClientHandler() { CookieContainer = container, Proxy = null, UseProxy = true });
+                    var client = new HttpClient(new HttpClientHandler() { CookieContainer = container, Proxy = util.httpProxy, UseProxy = true });
                     
                     var result = await cookieImporter.GetCookiesAsync(myPage);
                     
-					if (cookieImporter.SourceInfo.BrowserName.StartsWith("IE ") && 
+                    if (cookieImporter.SourceInfo.BrowserName.StartsWith("IE ") && 
                         result.Status == CookieImportState.AccessError) {
                     	return "DLLエラー" + result.Status;
                     } else if (result.Status != CookieImportState.Success) return null;

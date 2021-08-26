@@ -98,7 +98,6 @@ namespace namaichi
 			this.tabControl1.SelectedIndex = 0;
 			this.tabControl1.Size = new System.Drawing.Size(411, 485);
 			this.tabControl1.TabIndex = 1;
-			this.tabControl1.Click += new System.EventHandler(this.btnReload_Click);
 			// 
 			// tabPage6
 			// 

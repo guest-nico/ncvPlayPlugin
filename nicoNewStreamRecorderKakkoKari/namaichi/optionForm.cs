@@ -32,7 +32,6 @@ namespace namaichi
 		
 		static readonly Uri TargetUrl = new Uri("http://live.nicovideo.jp/");
 		private string fileNameFormat;
-//		private string 
 		
 		public optionForm(config.config cfg)
 		{
