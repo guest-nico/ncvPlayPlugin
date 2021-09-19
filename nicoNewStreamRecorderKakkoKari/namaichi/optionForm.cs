@@ -256,13 +256,13 @@ namespace namaichi
 		
 		void highRankBtn_Click(object sender, EventArgs e)
 		{
-			int[] ranks = {6,0,1,2,3,4,5};
+			int[] ranks = {7,6,8,0,1,2,3,4,5};
 			qualityListBox.Items.Clear();
 			qualityListBox.Items.AddRange(getRanksToItems(ranks, qualityListBox));
 		}
 		void lowRankBtn_Click(object sender, EventArgs e)
 		{
-			int[] ranks = {5, 4, 3, 2, 1, 0, 6};
+			int[] ranks = {5, 4, 3, 2, 1, 0, 8, 6, 8};
 			qualityListBox.Items.Clear();
 			qualityListBox.Items.AddRange(getRanksToItems(ranks, qualityListBox));
 		}
@@ -271,7 +271,8 @@ namespace namaichi
 				{0, "3Mbps(super_high)"},
 				{1, "2Mbps(high)"}, {2, "1Mbps(normal)"},
 				{3, "384kbps(low)"}, {4, "192kbps(super_low)"},
-				{5, "音声のみ(audio_high)"}, {6, "6Mbps(6Mbps1080p30fps)"}
+				{5, "音声のみ(audio_high)"}, {6, "6Mbps(6Mbps1080p30fps)"},
+				{7, "8Mbps(8Mbps1080p60fps)"}, {8, "4Mbps(4Mbps720p60fps)"}
 			};
 //			var ret = new ListBox.ObjectCollection(owner);
 			var ret = new List<object>();
@@ -315,7 +316,8 @@ namespace namaichi
 				{0, "3Mbps(super_high)"},
 				{1, "2Mbps(high)"}, {2, "1Mbps(normal)"},
 				{3, "384kbps(low)"}, {4, "192kbps(super_low)"},
-				{5, "音声のみ(audio_high)"}, {6, "6Mbps(6Mbps1080p30fps)"} 
+				{5, "音声のみ(audio_high)"}, {6, "6Mbps(6Mbps1080p30fps)"},
+				{7, "8Mbps(8Mbps1080p60fps)"}, {8, "4Mbps(4Mbps720p60fps)"}
 			};
 			var ret = new List<int>();
 			for (int i = 0; i < items.Count; i++) {

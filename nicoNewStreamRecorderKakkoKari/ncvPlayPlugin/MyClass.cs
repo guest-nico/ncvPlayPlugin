@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
+using System.Web.UI;
+using System.Windows.Forms;
 
 namespace ncvPlayPlugin
 {
@@ -83,39 +85,58 @@ namespace ncvPlayPlugin
 		Process getProcess() {
             var _p = new Process();
 			var si = new ProcessStartInfo();
+			
 			try {
-				if (host.IsConnected) {
-					si.Arguments = "lv" + host.GetPlayerStatus().LiveNum;
-				}
-			} catch (Exception e) {
-				try {
+				if (host != null && host.IsConnected) 
 					si.Arguments = host.GetLiveInfo().WssUrl;
-				} catch (Exception ee) {
+				//			var path = Path.GetFullPath("視聴プラグイン/視聴プラグイン.exe");
+				si.FileName = util.getJarPath()[0] + "/視聴プラグイン/視聴プラグイン.exe";
+				si.RedirectStandardInput = true;
+				si.UseShellExecute = false;
+				_p.StartInfo = si;
+			} catch (Exception ee) {
+				Debug.WriteLine(ee.Message + ee.Source + ee.StackTrace + ee.TargetSite);
+			}
+			try {
+				if (host != null && host.IsConnected) {
+					var _cc = new List<System.Windows.Forms.Control>();
+					getControls(host.MainForm, _cc);
+					foreach(var _c in _cc) {
+						if (_c == null) continue;
+						var lv = util.getRegGroup(_c.Text, "watch/(lv\\d+)");
+						if (lv != null) _p.StartInfo.Arguments = lv;
+					}
 					
 				}
-                
-            }
-//			var path = Path.GetFullPath("視聴プラグイン/視聴プラグイン.exe");
-			si.FileName = util.getJarPath()[0] + "/視聴プラグイン/視聴プラグイン.exe";
-			si.RedirectStandardInput = true;
-			si.UseShellExecute = false;
-			_p.StartInfo = si;
+			} catch (Exception) {
+				Debug.WriteLine(ee.Message + ee.StackTrace + ee.Source);
+			}
 			_p.Start();
 			return _p;
 		}
+		void getControls(System.Windows.Forms.Control c, List<System.Windows.Forms.Control> ret) {
+			foreach (System.Windows.Forms.Control cc in c.Controls) {
+				if (cc.Controls.Count != 0) getControls(cc, ret);
+				ret.Add(cc);
+			}
+		}
 		void connectedEvent(object sender, EventArgs e) {
 			try {
-				var lv = "lv" + host.GetPlayerStatus().LiveNum;
-				p.StandardInput.WriteLine(lv);
-				p.StandardInput.Flush();
-			} catch (Exception ee) {
-				try {
-                    var lv = host.GetLiveInfo().WssUrl;
-                    p.StandardInput.WriteLine(lv);
-                    p.StandardInput.Flush();
-				} catch (Exception eee) {
-					
+				var lv = "";
+				if (host != null && host.IsConnected) {
+					var _cc = new List<System.Windows.Forms.Control>();
+					getControls(host.MainForm, _cc);
+					foreach(var _c in _cc) {
+						if (_c == null) continue;
+						var _lv = util.getRegGroup(_c.Text, "watch/(lv\\d+)");
+						if (_lv != null) lv += _lv;
+					}
 				}
+				//var lv = host.GetHeartBeat().LiveNum;//.GetLiveInfo().WssUrl;
+                p.StandardInput.WriteLine(lv);
+                p.StandardInput.Flush();
+			} catch (Exception eee) {
+				Debug.WriteLine(eee.Message + eee.Source + eee.StackTrace + eee.TargetSite);
 			}
 		}
 	}
