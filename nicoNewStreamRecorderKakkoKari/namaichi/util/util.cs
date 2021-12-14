@@ -22,8 +22,8 @@ class app {
 	}
 }
 class util {
-	public static string versionStr = "ver0.1.16";
-	public static string versionDayStr = "2021/12/12";
+	public static string versionStr = "ver0.1.17";
+	public static string versionDayStr = "2021/12/14";
 	public static bool isShowWindow = true;
 	public static bool isStdIO = false;
 	public static WebProxy httpProxy = null;
