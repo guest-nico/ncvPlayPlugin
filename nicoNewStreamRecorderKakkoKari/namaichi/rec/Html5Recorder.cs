@@ -57,7 +57,7 @@ namespace namaichi.rec
 //				util.debugWriteLine(recFolderFileInfo[i]);
 			
 			//endcode 0-その他の理由 1-stop 2-最初に終了 3-始まった後に番組終了
-			var ret = html5Record(res, isRtmp, pageType).Result;
+			var ret = html5Record(res, isRtmp, pageType);
 			util.debugWriteLine("html5 rec ret " + ret);
 			return ret;
 		
@@ -198,7 +198,7 @@ namespace namaichi.rec
 			return new string[]{host, group, title, lvid, communityNum, userId};
 
 		}
-		async private Task<int> html5Record(string res, bool isRtmp, int pageType) {
+		private int html5Record(string res, bool isRtmp, int pageType) {
 			//webSocketInfo 0-wsUrl 1-request
 			//recFolderFileInfo host, group, title, lvid, communityNum
 			//return 0-end stream 1-stop

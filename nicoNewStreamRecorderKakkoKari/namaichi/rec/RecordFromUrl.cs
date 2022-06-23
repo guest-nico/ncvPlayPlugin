@@ -87,20 +87,20 @@ namespace namaichi.rec
 		}
 		
 		private int _rec(string url, bool isSub) {
-			JikkenRecorder jr = null;
-			RtmpRecorder rr = null;
+			//JikkenRecorder jr = null;
+			//RtmpRecorder rr = null;
 			var isRtmp = !isSubAccountHokan && (isRtmpMain || isSub);
 			CookieContainer cc = null;
 			
 			var pageType = wssUrl == null ?
-					this.getPageType(url, true, isSub, ref jr, out cc) :
+					this.getPageType(url, true, isSub, out cc) :
 					0;
 			container = cc;
 			if (pageType == -2 && isSub) return 2;
 			if (pageType == -1) return 2;
 			
 			//var ccInd = (isSub) ? 1 : 0;
-			var ccInd = 0;
+			//var ccInd = 0;
 			util.debugWriteLine("pagetype " + pageType + " container " + cc + " isSub " + isSub);
 			if ((cc == null || cc == null) && wssUrl == null) {
 				rm.form.addLogText("ログインに失敗しました。");
@@ -145,8 +145,8 @@ namespace namaichi.rec
 					if (rm.isPlayOnlyMode && pageType == 7 && isRtmp) isRtmp = false;
 					
 					if (isJikken) {
-						if (!jr.isLive && isSub) return 2;
-						recResult = jr.record(res, isRtmp);
+						//if (!jr.isLive && isSub) return 2;
+						//recResult = jr.record(res, isRtmp);
 					} else {
 						var isTimeShift = pageType == 7;
 						if (isTimeShift && isSub) return 2;
@@ -168,7 +168,8 @@ namespace namaichi.rec
 								res = util.getPageSource(url, ref wc, cc);
 								
 								isJikken = res.IndexOf("siteId&quot;:&quot;nicocas") > -1;
-								var _pageType = (isJikken) ? getJikkenPageType(res, isSub, out jr, cc) : util.getPageType(res);
+								//var _pageType = (isJikken) ? getJikkenPageType(res, isSub, cc) : util.getPageType(res);
+								var _pageType = util.getPageType(res);
 								util.debugWriteLine(_pageType);
 								if (pageType != 1) continue;
 								
@@ -193,7 +194,7 @@ namespace namaichi.rec
 //							var wc = new WebHeaderCollection();
 //							res = util.getPageSource(url, ref wc, container);
 //							pageType = util.getPageType(res);
-							pageType = getPageType(url, false, isSub, ref jr, out cc);
+							pageType = getPageType(url, false, isSub, out cc);
 							container = cc;
 							util.debugWriteLine("pagetype_ " + pageType);
 						} catch (Exception e) {
@@ -210,7 +211,7 @@ namespace namaichi.rec
 					util.debugWriteLine("pagetype6process");
 					System.Threading.Thread.Sleep(3000);
 					try {
-						pageType = getPageType(url, false, isSub, ref jr, out cc);
+						pageType = getPageType(url, false, isSub, out cc);
 						container = cc;
 						util.debugWriteLine("pagetype_ " + pageType);
 					} catch (Exception e) {
@@ -224,7 +225,7 @@ namespace namaichi.rec
 					rm.form.addLogText("require_community_menber");
 //					rm.form.addLogText(res);
 					
-					
+					/*
 					if (true && false) {
 						rm.rfu = null;
 						if (util.isShowWindow) {
@@ -240,6 +241,7 @@ namespace namaichi.rec
 					       	}
 						}
 					}
+					*/
 					return 2;
 					
 				} else if (pageType == 8) {
@@ -282,7 +284,7 @@ namespace namaichi.rec
             
 
 		}
-		public int getPageType(string url, bool isLogin, bool isSub, ref JikkenRecorder jr, out CookieContainer cc) {
+		public int getPageType(string url, bool isLogin, bool isSub, out CookieContainer cc) {
 			var dt = DateTime.Now;
 			var isFirst = true;
 			while (this == rm.rfu) {
@@ -345,7 +347,7 @@ namespace namaichi.rec
 					}
 					var isJikken = res.IndexOf("siteId&quot;:&quot;nicocas") > -1;
 					if (isJikken) {
-						return getJikkenPageType(res, isSub, out jr, cc);
+						//return getJikkenPageType(res, isSub, out jr, cc);
 					} else {
 						var _pageType = util.getPageType(res);
 						util.debugWriteLine(_pageType);
@@ -373,7 +375,7 @@ namespace namaichi.rec
             return (res.Headers.Get("Location") == null) ? false : true;
             */
 		}
-		private int getPageAfterFollow(string url, string lvid, bool isSub, ref JikkenRecorder jr, out CookieContainer cc) {
+		private int getPageAfterFollow(string url, string lvid, bool isSub, out CookieContainer cc) {
 			Uri TargetUrl = new Uri("http://live.nicovideo.jp");
 			Uri TargetUrl2 = new Uri("http://live2.nicovideo.jp");
 			for (int i = 0; this == rm.rfu; i++) {
@@ -410,7 +412,7 @@ namespace namaichi.rec
 		//			req.Headers = getheaders;
 					req.Referer = "http://live.nicovideo.jp/gate/" + lvid;
 					//var ccInd = (isSub) ? 1 : 0;
-					var ccInd = 0;
+					//var ccInd = 0;
 					cc.Add(TargetUrl, new Cookie("_gali", "box" + lvid));
 					if (cc != null) req.CookieContainer = cc;
 					var _res = (HttpWebResponse)req.GetResponse();
@@ -425,7 +427,8 @@ namespace namaichi.rec
 					isJikken = res.IndexOf("siteId&quot;:&quot;nicocas") > -1;
 					int pagetype;
 //					if (isRtmp) pagetype = getRtmpPageType(res, isSub, out rr, cc);
-					pagetype = (isJikken) ? getJikkenPageType(res, isSub, out jr, cc) : util.getPageType(res); 
+					//pagetype = (isJikken) ? getJikkenPageType(res, isSub, cc) : util.getPageType(res);
+					pagetype = util.getPageType(res);
 					
 //					var pagetype = util.getPageType(res);
 					if (!isJikken && pagetype != 5 && pagetype != 9) return pagetype;
@@ -439,7 +442,8 @@ namespace namaichi.rec
 			cc = null;
 			return -1;
 		}
-		private int getJikkenPageType(string res, bool isSub, out JikkenRecorder jr, CookieContainer cc) {
+		/*
+		private int getJikkenPageType(string res, bool isSub, CookieContainer cc) {
 //			if (jr == null)
 			//var ccInd = (isSub) ? 1 : 0;
 			var ccInd = 0;
@@ -447,6 +451,7 @@ namespace namaichi.rec
 //			rm.jr = jr;
 			return jr.getPageType();
 		}
+		*/
 		/*
 		private int getRtmpPageType(string res, bool isSub, out RtmpRecorder rr, CookieContainer cc) {
 			rr = new RtmpRecorder(res, lvid, cc, rm.cfg, rm, this, isSub);

@@ -351,6 +351,7 @@ namespace namaichi.utility
 				foreach (var _l in l) a.Remove(_l);
 				return a.Count == 0;
 			} catch (Exception e) {
+				util.debugWriteLine(e.Message + e.Source + e.StackTrace);
 				return false;
 			}
 		}

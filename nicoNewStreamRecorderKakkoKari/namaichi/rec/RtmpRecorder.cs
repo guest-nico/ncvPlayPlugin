@@ -91,7 +91,7 @@ namespace namaichi.rec
 			
 			var convertList = new List<string>();
 			var isFirst = true;
-			var isFailedRec = false;
+			//var isFailedRec = false;
 			try {
 				//var sleepSec = 1;
 				while (rm.rfu == rfu && retryMode == 0) {
@@ -133,7 +133,7 @@ namespace namaichi.rec
 					if (!isSub) {
 						//if (!isFirst && !rm.isPlayOnlyMode && !isFailedRec) wr.resetCommentFile();
 						isFirst = false;
-						isFailedRec = false;
+						//isFailedRec = false;
 						
 						Task.Run(() => errorReadProcess(rtmpdumpP));
 						
@@ -168,7 +168,7 @@ namespace namaichi.rec
 								if (f != null && f.Exists)
 								    File.Delete(f.FullName);
 								
-								isFailedRec = true;
+								//isFailedRec = true;
 							} else {
 	//							if (rm.cfg.get("IsAfterRenketuFFmpeg") == "true" ||
 	//							   		(afterConvertMode != "0" && afterConvertMode != "4")) {

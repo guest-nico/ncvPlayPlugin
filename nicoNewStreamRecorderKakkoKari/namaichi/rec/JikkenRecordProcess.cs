@@ -21,6 +21,7 @@ using WebSocket4Net;
 //using Newtonsoft.Json;
 using namaichi.info;
 
+/*
 namespace namaichi.rec
 {
 	/// <summary>
@@ -150,7 +151,7 @@ namespace namaichi.rec
 			catch (Exception e) {
 				System.Windows.Forms.MessageBox.Show("websocket", "aa");
 			}
-			*/
+			*
 			//util.debugWriteLine(System.Diagnostics.FileVersionInfo.GetVersionInfo("websocket4net.dll").
 			if (isRtmp || 
 				    (rm.cfg.get("IsHokan") == "true" && 
@@ -273,7 +274,7 @@ namespace namaichi.rec
 				util.debugWriteLine(e.Message + e.StackTrace + util.getMainSubStr(isSub, true));
 			}
 			isRetry = false;
-			*/
+			*
 		}
 		private bool isEndedProgram() {
 			var url = "http://live2.nicovideo.jp/watch/" + lvid;
@@ -303,4 +304,4 @@ namespace namaichi.rec
 		}
 	}
 }
-
+*/

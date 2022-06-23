@@ -40,17 +40,17 @@ namespace namaichi.rec
 		private RecordFromUrl rfu;
 		public Html5Recorder h5r;
 		private WebSocket ws;
-		private WebSocket wsc;
+		//private WebSocket wsc;
 		private Record rec;
-		private StreamWriter commentSW;
+		//private StreamWriter commentSW;
 		//public string msUri;
 		//public string[] msReq;
-		private long serverTime;
-		private string ticket;
+		//private long serverTime;
+		//private string ticket;
 		private bool isRetry = true;
-		private string msThread;
-		private string sendCommentBuf = null;
-		private bool isSend184 = true;
+		//private string msThread;
+		//private string sendCommentBuf = null;
+		//private bool isSend184 = true;
 		
 		private bool isNoPermission = false;
 		//public long openTime;
@@ -59,7 +59,7 @@ namespace namaichi.rec
 		public int lastSegmentNo = -1;
 		//public bool isTimeShift = false;
 		private TimeShiftConfig tsConfig = null;
-		private bool isTimeShiftCommentGetEnd = false;
+		//private bool isTimeShiftCommentGetEnd = false;
 		private DateTime lastEndProgramCheckTime = DateTime.Now;
 		private DateTime lastWebsocketConnectTime = DateTime.Now;
 		
@@ -88,11 +88,11 @@ namespace namaichi.rec
 		private string qualityRank = null;
 		private string isGetComment = null;
 		private string isGetCommentXml = null;
-		private string commentFileName = null;
+		//private string commentFileName = null;
 //		private string commentHead = null;
 		private string engineMode = null;
 		
-		private bool isXmlComment = true;
+		//private bool isXmlComment = true;
 		//private XmlCommentGetter_ontime xcg = null;
 		//private TimeShiftCommentGetter_xml tscgx = null;
 		private string selectQuality = null;
@@ -138,7 +138,7 @@ namespace namaichi.rec
 		public bool start(bool isRtmpOnlyPage) {
 			addDebugBuf("ws rec start");
 			
-			isXmlComment = false;
+			//isXmlComment = false;
 			tsWriterTask = Task.Run(() => {startDebugWriter();});
 			
 //			connect(webSocketInfo[0]);
@@ -239,7 +239,7 @@ namespace namaichi.rec
 			
 			if (rm.rfu != rfu) {
 				//if (rr != null) rr.isRetry = false;
-				stopRecording(ws, wsc);
+				stopRecording(ws);
 //				ws.Close();
 //				wsc.Close();
 				if (rec != null) 
@@ -247,7 +247,7 @@ namespace namaichi.rec
 			}
 			if (!isRetry) {
 				//if (rr != null) rr.isRetry = false;
-				stopRecording(ws, wsc);
+				stopRecording(ws);
 				if (rec != null)
 					rec.waitForEnd();
 			}
@@ -623,7 +623,7 @@ namespace namaichi.rec
 			
 		}
 		
-		public void stopRecording(WebSocket _ws, WebSocket _wsc) {
+		public void stopRecording(WebSocket _ws) {
 			addDebugBuf("stop recording");
 			try {
 				if (_ws != null && _ws.State != WebSocketState.Closed) {
@@ -638,15 +638,7 @@ namespace namaichi.rec
 				addDebugBuf("ws close error");
 				addDebugBuf(e.Message + e.StackTrace);
 			}
-			try {
-				if (_wsc != null && _wsc.State != WebSocketState.Closed && _wsc.State != WebSocketState.Closing) {
-					addDebugBuf("state close wsc " + _wsc.State);					
-					_wsc.Close();
-				}
-			} catch (Exception e) {
-				addDebugBuf("wsc close error");
-				addDebugBuf(e.Message + e.StackTrace);
-			}
+			
 			try {
 //				if (commentSW != null) commentSW.Close();
 			} catch (Exception e) {
@@ -690,7 +682,8 @@ namespace namaichi.rec
 				"super_high", "high",
 				"normal", "low", "super_low",
 				"audio_high", "6Mbps1080p30fps",
-				"8Mbps1080p60fps", "4Mbps720p60fps"};
+				"8Mbps1080p60fps", "4Mbps720p60fps",
+				"audio_only"};
 			
 			gettableList = webSocketInfo[2] == "1" ? 
 					util.getRegGroup(msg, "\"qualityTypes\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',')
@@ -780,7 +773,7 @@ namespace namaichi.rec
 		
 		private void startDebugWriter() {
 			#if !DEBUG
-				return;
+				//return;
 			#endif
 			while ((rm.rfu == rfu && isRetry) || debugWriteBuf.Count > 0) {
 				try {
@@ -806,7 +799,7 @@ namespace namaichi.rec
 		}
 		private void addDebugBuf(string s) {
 			#if !DEBUG
-				return;
+				//return;
 			#endif
 			var dt = DateTime.Now.ToLongTimeString();
 			debugWriteBuf.Add(dt + " " + s);

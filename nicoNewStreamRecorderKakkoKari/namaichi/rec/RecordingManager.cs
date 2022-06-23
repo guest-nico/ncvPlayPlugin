@@ -65,7 +65,7 @@ namespace namaichi.rec
 			return a;
 		}
 		*/
-		async public void rec() {
+		public void rec() {
             util.debugWriteLine("rm");
            
             

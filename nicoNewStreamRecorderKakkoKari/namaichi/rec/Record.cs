@@ -29,7 +29,7 @@ namespace namaichi.rec
 		private RecordingManager rm;
 		private bool isFFmpeg;
 		private RecordFromUrl rfu;
-		private System.Diagnostics.Process process;
+		//private System.Diagnostics.Process process;
 		private DateTime lastReadTime = DateTime.UtcNow;
 		public string hlsMasterUrl;
 		private string recFolderFile;
@@ -37,7 +37,7 @@ namespace namaichi.rec
 		private long _openTime;
 		private int lastSegmentNo = -1;
 		private DateTime lastWroteSegmentDt = DateTime.MinValue;
-		private int lastAccessingSegmentNo;
+		//private int lastAccessingSegmentNo;
 		private CookieContainer container;
 		private int segmentSaveType = 0;
 		private bool isTimeShift = false;
@@ -53,19 +53,19 @@ namespace namaichi.rec
 		private double recordedSecond = 0;
 		private long recordedBytes = 0;
 		private int lastRecordedSeconds = -1;
-		private double lastFileSecond = 0;
+		//private double lastFileSecond = 0;
 		private int gotTsMaxNo = -1;
 		public bool isEndProgram = false;
 		private double allDuration = -1;
 		private string engineMode = "0";
 		private string anotherEngineCommand = ""; 
-		private Html5Recorder h5r;
+		//private Html5Recorder h5r;
 		private double targetDuration = 2;
 		private object recordLock = new object();
 		private List<string> segM3u8List = new List<string>();
 		private List<numTaskInfo> gotTsList = new List<numTaskInfo>();
 		private Task m3u8GetterTask = null;
-		private Task tsGetterTask = null;
+		//private Task tsGetterTask = null;
 		private Task tsWriterTask = null;
 		private List<string> debugWriteBuf = new List<string>();
 		private bool isPlayOnlyMode;
@@ -150,7 +150,7 @@ namespace namaichi.rec
 			
 //			if (isFFmpegThrough()) realtimeFFmpeg = new RealTimeFFmpeg();
 			
-			var isFirst = true;
+			//var isFirst = true;
 			while (rm.rfu == rfu && isRetry) {
 				if (isReConnecting) {
 					Thread.Sleep(500);
@@ -170,25 +170,7 @@ namespace namaichi.rec
 					addDebugBuf("got timeshift playlist");
 					break;
 				}
-				
-				if (true || engineMode == "0" || engineMode == "3" || engineMode == "2") {
-					Thread.Sleep(500);
-					
-				} else {
-					
-					isFirst = false;
-					
-					var aer = new AnotherEngineRecorder(rm, rfu);
-					aer.record(hlsSegM3uUrl, recFolderFile, anotherEngineCommand);
-					
-					//recFolderFile = util.incrementRecFolderFile(recFolderFile);//wr.getRecFilePath()[1];
-					setReconnecting(true);
-//					if (!isReConnecting) 
-					reConnect();
-					
-					continue;
-					
-				}
+				Thread.Sleep(500);
 			}
 			if (isSub) {
 				isEnd = true;
@@ -244,12 +226,9 @@ namespace namaichi.rec
 				var res = "";
 				if (res == null) {
 					addDebugBuf("m3u8 getter segM3u8List res null reconnect");
-//					setReconnecting(true);
-					if (!wr.isJikken || 
-					    (wr.isJikken && ((JikkenRecordProcess)wr).changedHlsUrl.IndexOf(hlsMasterUrl) == -1)) {
+
 		//				if (!isReConnecting) 
 						reConnect();
-					}
 					
 					continue;
 				}
@@ -258,6 +237,7 @@ namespace namaichi.rec
 				Thread.Sleep(3000);
 				continue;
 				
+				/*
 				//util.debugWriteLine(res);
 				addDebugBuf(res);
 				var isTimeShiftPlaylist = res.IndexOf("#STREAM-DURATION") > -1;
@@ -288,6 +268,7 @@ namespace namaichi.rec
 				Thread.Sleep((int)(targetDuration * 500));
 				//util.debugWriteLine("targetduration " + targetDuration);
 				addDebugBuf("targetduration " + targetDuration);
+				*/
 			}
 			addDebugBuf("m3u8 getter end segm8u8List len " + segM3u8List.Count);
 		}
@@ -779,7 +760,7 @@ namespace namaichi.rec
 		}
 		private void startDebugWriter() {
 			#if !DEBUG
-				return;
+				//return;
 			#endif
 			
 			while ((rm.rfu == rfu || !isEnd) || debugWriteBuf.Count != 0) {
@@ -797,13 +778,14 @@ namespace namaichi.rec
 					}
 					Thread.Sleep(500);
 				} catch (Exception e) {
+					util.debugWriteLine(e.Message + e.Source + e.StackTrace);
 				}
 			}
 			util.debugWriteLine("start debug writer end rm.rfu == rfu " + (rm.rfu == rfu) + " isend " + isEnd + " debugWriteBuf.count " + debugWriteBuf.Count);
 		}
 		public void addDebugBuf(string s) {
 			#if !DEBUG
-				return;
+				//return;
 			#endif
 			
 			var dt = DateTime.Now.ToLongTimeString();

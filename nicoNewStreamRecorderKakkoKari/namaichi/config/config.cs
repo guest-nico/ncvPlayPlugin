@@ -153,7 +153,7 @@ public class config
 			{"IsgetcommentXml","true"},
 			{"IstitlebarSamune","true"},
 			{"IsautoFollowComgen","false"},
-			{"qualityRank","0,1,2,3,4,5,6,7,8"},
+			{"qualityRank","0,1,2,3,4,5,6,7,8,9"},
 			{"IsLogFile","false"},
 			{"IsSegmentNukeInfo","true"},
 			{"segmentSaveType","0"},
@@ -200,7 +200,7 @@ public class config
 			{"rokugaTourokuWidth","950"},
 			{"rokugaTourokuHeight","500"},
 			{"rokugaTourokuMaxRecordingNum","10"},
-			{"rokugaTourokuQualityRank","0,1,2,3,4,5,6,7,8"},
+			{"rokugaTourokuQualityRank","0,1,2,3,4,5,6,7,8,9"},
 			{"X",""},
 			{"Y",""},
 			

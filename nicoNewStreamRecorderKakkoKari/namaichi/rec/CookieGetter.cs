@@ -21,18 +21,18 @@ namespace namaichi.rec
 	/// </summary>
 	public class CookieGetter
 	{
-		private CookieContainer cc;
+		//private CookieContainer cc;
 		public string pageSource = null;
 		public bool isHtml5 = false;
 		private config.config cfg;
 		public string log = "";
 		public string id = null;
-		static readonly Uri TargetUrl = new Uri("http://live.nicovideo.jp/");
-		static readonly Uri TargetUrl2 = new Uri("http://live2.nicovideo.jp");
+		static readonly Uri TargetUrl = new Uri("https://live.nicovideo.jp/");
+		static readonly Uri TargetUrl2 = new Uri("https://live2.nicovideo.jp");
 		static readonly Uri TargetUrl3 = new Uri("https://com.nicovideo.jp");
-		static readonly Uri TargetUrl4 = new Uri("http://watch.live.nicovideo.jp/api/");
+		static readonly Uri TargetUrl4 = new Uri("https://watch.live.nicovideo.jp/api/");
 		private bool isSub;
-		private bool isRtmp;
+		private bool isRtmp = false;
 		
 		public CookieGetter(config.config cfg)
 		{
@@ -269,50 +269,50 @@ namespace namaichi.rec
 			
 			if (mail == null || pass == null) return null;
 			
-			var loginUrl = "https://secure.nicovideo.jp/secure/login?site=nicolive";
-//			var param = "mail=" + mail + "&password=" + pass;
+			var isNew = true;
+			
+			string loginUrl;
+			Dictionary<string, string> param;
+			if (isNew) {
+				loginUrl = "https://account.nicovideo.jp/login/redirector";
+				param = new Dictionary<string, string> {
+					{"mail_tel", mail}, {"password", pass}, {"auth_id", "15263781"}//dummy
+				};
+			} else {
+				loginUrl = "https://secure.nicovideo.jp/secure/login?site=nicolive";
+				param = new Dictionary<string, string> {
+					{"mail", mail}, {"password", pass}
+				};
+			}
 			
 			try {
 				var handler = new System.Net.Http.HttpClientHandler();
+				if (util.httpProxy != null) {
+					handler.UseProxy = true;
+					handler.Proxy = util.httpProxy;
+				}
 				handler.UseCookies = true;
 				var http = new System.Net.Http.HttpClient(handler);
-				var content = new System.Net.Http.FormUrlEncodedContent(new Dictionary<string, string>
-				{
-					{"mail", mail}, {"password", pass}
-				});
+				var content = new System.Net.Http.FormUrlEncodedContent(param);
 				
-				var _res = await http.PostAsync(loginUrl, content);
-				var res = await _res.Content.ReadAsStringAsync();
-	//			var a = _res.Headers;
+				var _res = await http.PostAsync(loginUrl, content).ConfigureAwait(false);
+				var res = await _res.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+				var cc = handler.CookieContainer;
+				var cookies = cc.GetCookies(TargetUrl);
+				var c = cookies["user_session"];
+				var secureC = cookies["user_session_secure"];
+				//cc = copyUserSession(cc, c, secureC);
+				log += (c == null) ? "ユーザーセッションが見つかりませんでした。" : "ユーザーセッションが見つかりました。";
+				log += (secureC == null) ? "secureユーザーセッションが見つかりませんでした。" : "secureユーザーセッションが見つかりました。";
+				if (c == null && secureC == null) return null;
 				
-	//			if (res.IndexOf("login_status = 'login'") < 0) return null;
-				
-				cc = handler.CookieContainer;
-				
-//				return cc;
+				return cc;
+			
 			} catch (Exception e) {
-				util.debugWriteLine(e.Message+e.StackTrace + util.getMainSubStr(isSub));
+				util.debugWriteLine(e.Message+e.StackTrace);
 				return null;
 			}
-			
-			
-			var c = cc.GetCookies(TargetUrl)["user_session"];
-			var secureC = cc.GetCookies(TargetUrl)["user_session_secure"];
-			cc = copyUserSession(cc, c, secureC);
-			log += (c == null) ? "ユーザーセッションが見つかりませんでした。" : "ユーザーセッションが見つかりました。";
-			log += (secureC == null) ? "secureユーザーセッションが見つかりませんでした。" : "secureユーザーセッションが見つかりました。";
-			if (c == null && secureC == null) return null;
-			/*
-			var encoder = System.Text.Encoding.GetEncoding("UTF=8");
-			var sr = new System.IO.StreamReader(resStream, encoder);
-			var xml = sr.ReadToEnd();
-			sr.Close();
-			resStream.Close();
-			
-			if (xml.IndexOf("not login") != -1) return null;
-			*/
-			return cc;
-				
 		}
 		private CookieContainer copyUserSession(CookieContainer cc, 
 				Cookie c, Cookie secureC) {
