@@ -10,6 +10,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using System.Web;
+using namaichi.utility;
 using SunokoLibrary.Application;
 using System.Net.Http;
 using System.Collections.Generic;
@@ -230,8 +231,10 @@ namespace namaichi.rec
 				try {
 					util.debugWriteLine("ishtml5login getpage " + url + util.getMainSubStr(isSub));
 					
-					var _url = (isRtmp) ? ("http://live.nicovideo.jp/api/getplayerstatus/" + util.getRegGroup(url, "(lv\\d+)")) : url;
-					pageSource = util.getPageSource(_url, ref headers, cc);
+					var _url = (isRtmp) ? ("https://live.nicovideo.jp/api/getplayerstatus/" + util.getRegGroup(url, "(lv\\d+)")) : url;
+					//pageSource = util.getPageSource(_url, ref headers, cc);
+					var h = util.getHeader(cc, null, _url);
+					pageSource = new Curl().getStr(_url, h, CurlHttpVersion.CURL_HTTP_VERSION_2TLS, "GET", null, false);
 //					util.debugWriteLine(cc.GetCookieHeader(new Uri(_url)));
 					util.debugWriteLine("ishtml5login getpage ok" + util.getMainSubStr(isSub));
 				} catch (Exception e) {

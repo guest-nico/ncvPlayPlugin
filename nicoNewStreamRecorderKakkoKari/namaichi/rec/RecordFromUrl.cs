@@ -376,8 +376,8 @@ namespace namaichi.rec
             */
 		}
 		private int getPageAfterFollow(string url, string lvid, bool isSub, out CookieContainer cc) {
-			Uri TargetUrl = new Uri("http://live.nicovideo.jp");
-			Uri TargetUrl2 = new Uri("http://live2.nicovideo.jp");
+			Uri TargetUrl = new Uri("https://live.nicovideo.jp");
+			Uri TargetUrl2 = new Uri("https://live2.nicovideo.jp");
 			for (int i = 0; this == rm.rfu; i++) {
 				try {
 					var cg = new CookieGetter(rm.cfg);
@@ -405,12 +405,12 @@ namespace namaichi.rec
 	//				var pagetype = getPageType(url + "?ref=grel");
 	//				if (pagetype != 5) return pagetype;
 	//				if (res.IndexOf("会場のご案内") < 0) break;
-					var _url = "http://live2.nicovideo.jp/watch/" + lvid;                              
+					var _url = "https://live.nicovideo.jp/watch/" + lvid;                              
 					var req = (HttpWebRequest)WebRequest.Create(_url + "?ref=grel");
 					req.Proxy = null;
 					req.AllowAutoRedirect = true;
 		//			req.Headers = getheaders;
-					req.Referer = "http://live.nicovideo.jp/gate/" + lvid;
+					req.Referer = "https://live.nicovideo.jp/gate/" + lvid;
 					//var ccInd = (isSub) ? 1 : 0;
 					//var ccInd = 0;
 					cc.Add(TargetUrl, new Cookie("_gali", "box" + lvid));

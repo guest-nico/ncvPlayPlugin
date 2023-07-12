@@ -22,8 +22,8 @@ class app {
 	}
 }
 class util {
-	public static string versionStr = "ver0.1.19";
-	public static string versionDayStr = "2022/06/23";
+	public static string versionStr = "ver0.1.20";
+	public static string versionDayStr = "2023/07/12";
 	public static bool isShowWindow = true;
 	public static bool isStdIO = false;
 	public static WebProxy httpProxy = null;
@@ -517,6 +517,7 @@ class util {
 //				util.debugWriteLine("getpage 04");
 				if (container != null) req.CookieContainer = container;
 //				util.debugWriteLine("getpage 05");
+				req.UserAgent = userAgent;
 
 				req.Timeout = timeoutMs;
 //				util.debugWriteLine("getpage 0");
@@ -707,7 +708,7 @@ class util {
 		}
 	}
 	public static bool isEndedProgram(string lvid, CookieContainer container, bool isSub) {
-		var url = "http://live2.nicovideo.jp/watch/" + lvid;
+		var url = "https://live.nicovideo.jp/watch/" + lvid;
 		
 		var a = new System.Net.WebHeaderCollection();
 		var res = util.getPageSource(url, ref a, container);
@@ -1017,5 +1018,17 @@ class util {
 			util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
 		}
 		return null;
+	}
+	public static string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+	public static Dictionary<string, string> getHeader(CookieContainer cc, string referer, string url) {
+		var ret = new Dictionary<string, string>() {
+			{"Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"},
+			{"Accept-Language", "ja,en-US;q=0.7,en;q=0.3"},
+			{"Cache-Control", "no-cache"},
+			{"User-Agent", userAgent}
+		};
+		if (cc != null) ret["Cookie"] = cc.GetCookieHeader(new Uri(url));
+		if (referer != null) ret["Referer"] = referer;
+		return ret;
 	}
 }

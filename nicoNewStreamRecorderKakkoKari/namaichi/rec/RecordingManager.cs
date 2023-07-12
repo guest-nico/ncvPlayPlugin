@@ -37,7 +37,7 @@ namespace namaichi.rec
 		public string hlsUrl = null;
 		public Stream rtmpPipe = null;
 		public IRecorderProcess wsr = null;
-		static readonly Uri TargetUrl = new Uri("http://live.nicovideo.jp/");
+		static readonly Uri TargetUrl = new Uri("https://live.nicovideo.jp/");
 		public config.config cfg;
 		public string recordingUrl;
 		public string communityNum;
@@ -82,7 +82,7 @@ namespace namaichi.rec
 
 				var lvid = lv;//util.getRegGroup(form.urlText.Text, "(lv\\d+(,\\d+)*)", 1);
 				if (lvid != null || wssUrl != null) {
-					var url = lvid != null ? ("http://live2.nicovideo.jp/watch/" + lvid) : wssUrl;
+					var url = lvid != null ? ("https://live.nicovideo.jp/watch/" + lvid) : wssUrl;
 					if (isPlayOnlyMode) {
 						form.Invoke((MethodInvoker)delegate() {
 							form.urlText.Text = url; 
