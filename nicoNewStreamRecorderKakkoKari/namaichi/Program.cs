@@ -8,6 +8,7 @@
  */
 using System;
 using System.Diagnostics;
+using System.Net;
 using System.Windows.Forms;
 
 namespace namaichi
@@ -35,10 +36,12 @@ namespace namaichi
 			Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
 			System.Threading.Tasks.TaskScheduler.UnobservedTaskException += taskSchedulerUnobservedTaskException;
 			AppDomain.CurrentDomain.FirstChanceException += firstChanceException;
-				
+			
 			Application.EnableVisualStyles();
 			Application.SetCompatibleTextRenderingDefault(false);
 			
+			ServicePointManager.SecurityProtocol = SecurityProtocolType.Ssl3 | SecurityProtocolType.Tls |SecurityProtocolType.Tls11 | SecurityProtocolType.Tls12;
+						
 //			args = new string[]{"-nowindo", "lv316266831", "-stdIO"};
 //			args = new String[]{"lv316036760", "-ts-start=5m0s", "-ts-end=5m10s", "-afterConvertMode=4"};
 			if (Array.IndexOf(args, "-nowindow") == -1) 
