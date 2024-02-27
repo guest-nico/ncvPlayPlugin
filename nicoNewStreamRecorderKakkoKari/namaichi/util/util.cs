@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using Microsoft.Win32;
 using namaichi.config;
 using namaichi.info;
+using namaichi.utility;
 
 class app {
 	public static void Mains(string[] args) {
@@ -22,11 +23,13 @@ class app {
 	}
 }
 class util {
-	public static string versionStr = "ver0.1.20";
-	public static string versionDayStr = "2023/07/12";
+	public static string versionStr = "ver0.1.21";
+	public static string versionDayStr = "2024/02/27";
 	public static bool isShowWindow = true;
 	public static bool isStdIO = false;
 	public static WebProxy httpProxy = null;
+	public static string osName = null;
+	public static bool isWebRequestOk = false;
 	
 	public static string getRegGroup(string target, string reg, int group = 1, Regex r = null) {
 		if (r == null)
@@ -1019,7 +1022,7 @@ class util {
 		}
 		return null;
 	}
-	public static string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36";
+	public static string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
 	public static Dictionary<string, string> getHeader(CookieContainer cc, string referer, string url) {
 		var ret = new Dictionary<string, string>() {
 			{"Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"},
@@ -1030,5 +1033,83 @@ class util {
 		if (cc != null) ret["Cookie"] = cc.GetCookieHeader(new Uri(url));
 		if (referer != null) ret["Referer"] = referer;
 		return ret;
+	}
+	public static bool isUseCurl(CurlHttpVersion httpVer = CurlHttpVersion.CURL_HTTP_VERSION_1_1) {
+		//return true;
+		
+		if (httpVer != CurlHttpVersion.CURL_HTTP_VERSION_1_1) return true;
+		if ((util.osName != null && 
+		     (util.osName.IndexOf("Windows 1") > -1)) || util.isWebRequestOk)
+			return false;
+		//return util.isCurl;
+		return true;
+	}
+	public static bool isWin10Later() {
+		return (util.osName != null && 
+		     (util.osName.IndexOf("Windows 1") > -1)); 
+	}
+	public static string CheckOSName()
+    {
+        string result = "";
+
+        System.Management.ManagementClass mc =
+            new System.Management.ManagementClass("Win32_OperatingSystem");
+        System.Management.ManagementObjectCollection moc = mc.GetInstances();
+
+        try
+        {
+            foreach (System.Management.ManagementObject mo in moc)
+            {
+                result = mo["Caption"].ToString();
+                if (mo["CSDVersion"] != null)
+                    result += " " + mo["CSDVersion"].ToString();
+                result += " (" + mo["Version"].ToString() + ")";
+            }
+            osName = result;
+        }
+        catch (Exception e)
+        {
+            util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+            return result;
+        }
+
+        return result;
+    }
+    public static string CheckOSType()
+    {
+        string result = "";
+
+        System.Management.ManagementClass mc =
+            new System.Management.ManagementClass("Win32_OperatingSystem");
+        System.Management.ManagementObjectCollection moc = mc.GetInstances();
+
+        try
+        {
+            foreach (System.Management.ManagementObject mo in moc)
+            {
+                if (mo["Version"].ToString().StartsWith("5.1"))
+                    result = "XP";
+                else if (mo["Version"].ToString().StartsWith("6.0"))
+                    result = "Vista";
+                else if (mo["Version"].ToString().StartsWith("6.1"))
+                    result = "7";
+                else if (mo["Version"].ToString().StartsWith("6.2"))
+                    result = "8";
+                else if (mo["Version"].ToString().StartsWith("6.3"))
+                    result = "8.1";
+                else if (mo["Version"].ToString().StartsWith("10.0"))
+                    result = "10";
+                else if (mo["Version"].ToString().StartsWith("11.0"))
+                    result = "11";
+                else
+                    result = "other";
+            }
+        }
+        catch (Exception e)
+        {
+            util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+            return result;
+        }
+        return result;
 	}
 }

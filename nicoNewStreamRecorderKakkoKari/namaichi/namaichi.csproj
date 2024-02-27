@@ -99,6 +99,7 @@
     <Reference Include="System.IO">
       <HintPath>..\packages\Microsoft.Bcl.1.1.9\lib\net40\System.IO.dll</HintPath>
     </Reference>
+    <Reference Include="System.Management" />
     <Reference Include="System.Net" />
     <Reference Include="System.Net.Http">
       <HintPath>..\packages\Microsoft.Net.Http.2.2.28\lib\net40\System.Net.Http.dll</HintPath>
@@ -176,7 +177,9 @@
     <Compile Include="rec\Record.cs" />
     <Compile Include="rec\RecordFromUrl.cs" />
     <Compile Include="rec\RecordingManager.cs" />
+    <Compile Include="rec\RecordStateSetter.cs" />
     <Compile Include="rec\RtmpRecorder.cs" />
+    <Compile Include="rec\WebSocketCurl.cs" />
     <Compile Include="rec\WebSocketRecorder.cs" />
     <Compile Include="TimeShiftOptionForm.cs">
       <SubType>Form</SubType>
@@ -185,6 +188,7 @@
       <DependentUpon>TimeShiftOptionForm.cs</DependentUpon>
     </Compile>
     <Compile Include="util\ArgReader.cs" />
+    <Compile Include="util\Curl.cs" />
     <Compile Include="util\RegGetter.cs" />
     <Compile Include="util\SourceInfoSerialize.cs" />
     <Compile Include="util\util.cs" />

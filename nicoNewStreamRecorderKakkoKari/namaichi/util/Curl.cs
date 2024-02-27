@@ -1,154 +1,169 @@
 ﻿/*
  * Created by SharpDevelop.
  * User: zack
- * Date: 2023/07/12
- * Time: 19:10
+ * Date: 2022/05/06
+ * Time: 19:01
  * 
  * To change this template use Tools | Options | Coding | Edit Standard Headers.
  */
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace namaichi.utility
 {
+	
 	/// <summary>
 	/// Description of Curl.
 	/// </summary>
+	
 	public class Curl
 	{
 		private IntPtr curlM = IntPtr.Zero;
 		public Curl()
 		{
-			try {
-				curlM = curl_multi_init();
-			} catch (Exception e) {
-				util.debugWriteLine(e.Message + e.Source + e.StackTrace);
-			}
-			if (curlM == IntPtr.Zero) {
-				Debug.WriteLine("curl_multi_init zero");
-				return;
-			}
-			curl_multi_setopt(curlM, CURLMoption.CURLMOPT_PIPELINING, (int)CURLpipe.CURLPIPE_MULTIPLEX);
+			
 		}
 		public bool isInitialized() {
 			return curlM != IntPtr.Zero;
 		}
-		public byte[] getBytes(string url, Dictionary<string, string> headers, CurlHttpVersion httpVer, string method = "GET", string postData = "", bool isAddHeader = false) {
-			try {
-				var urlList = new List<string>(){url};
-				var r = get(urlList, headers, httpVer, method, postData, isAddHeader);
-				return r.Count != 0 ? r[0].Value : null;
-			} catch (Exception e) {
-				Debug.WriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
-				return null;
-			}
+		public byte[] getBytes(string url, Dictionary<string, string> headers, CurlHttpVersion httpVer, string method = "GET", string postData = null, bool isAddHeader = false) {
+			var d = postData == null ? null : Encoding.UTF8.GetBytes(postData);
+			return getBytes(url, headers, httpVer, method, d, isAddHeader);
 		}
-		public string getStr(string url, Dictionary<string, string> headers, CurlHttpVersion httpVer, string method = "GET", string postData = "", bool isAddHeader = false) {
+		public byte[] getBytes(string url, Dictionary<string, string> headers, CurlHttpVersion httpVer, string method = "GET", byte[] postData = null, bool isAddHeader = false) {
 			try {
-				var urlList = new List<string>(){url};
-				var r = get(urlList, headers, httpVer, method, postData, isAddHeader);
-				if (r.Count == 0) return null;
-				return r[0].Value == null ? null : Encoding.UTF8.GetString(r[0].Value);
-			} catch (Exception e) {
-				Debug.WriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
-				return null;
-			}
-		}
-		
-		public List<KeyValuePair<string, byte[]>> get(List<string> urlList, Dictionary<string, string> headers, CurlHttpVersion httpVer, string method = "GET", string postData = "", bool isAddHeader = false) {
-			var easyDataList = new List<easyData>();
-			var _postData = postData == null ? IntPtr.Zero : Marshal.StringToHGlobalAnsi(postData);
-			try {
-				Debug.WriteLine("curl urlList count " + urlList.Count);
-				foreach (var u in urlList) {
-					var easyD = new easyData(u);
-					Debug.WriteLine("curl access " + u);
-					if (!easyD.setEasy(u, headers, httpVer, method, _postData)) {
-						Debug.WriteLine("set easy error " + u);
-						easyDataList.Add(null);
-						continue;
+				if (util.isUseCurl(httpVer)) {
+					util.debugWriteLine("curl get str " + url);
+					int httpCode;
+					var r2 = get2(url, headers, httpVer, out httpCode, method, postData, isAddHeader);
+					if (r2 == null) {
+						util.debugWriteLine("curl error null " + url);
+						return null;
 					}
-					easyDataList.Add(easyD);
-					curl_multi_add_handle(curlM, easyD.easyPtr);
+					var a = Encoding.UTF8.GetString(r2);
+					if (r2.Length == 0) return null;
+					if (httpCode >= 400 ||  httpCode == 0) {
+						util.debugWriteLine("curl error " + url + " " + httpCode + " " + a);
+						return null;
+					}
+					return r2;
+				} else {
+					var r22 = util.sendRequest(url, headers, postData, method, null);
+					using (var r2 = r22.GetResponseStream()) {
+						var ms = new MemoryStream();
+						r2.CopyTo(ms);
+						var a = ms.ToArray();
+						return a;
+					}
+				}
+			} catch (Exception e) {
+				Debug.WriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+				return null;
+			}
+		}
+		public string getStr(string url, Dictionary<string, string> headers, CurlHttpVersion httpVer, string method = "GET", string postData = "", bool isAddHeader = false, bool isGetErrorMessage = false, bool isFollowLocation = true) {
+			try {
+				if (util.isUseCurl(httpVer)) {
+					util.debugWriteLine("curl get str " + url);
+					int httpCode;
+					var d = postData == null ? null : Encoding.UTF8.GetBytes(postData);
+					var r2 = get2(url, headers, httpVer, out httpCode, method, d, isAddHeader, isFollowLocation);
+					if (r2 == null) {
+						util.debugWriteLine("curl error null " + url);
+						return null;
+					}
+					var ret = Encoding.UTF8.GetString(r2);
+					util.debugWriteLine("curl ret " + url + " " + httpCode);
+					if (ret.Length == 0) 
+						return null;
+					if ((httpCode >= 400 ||  httpCode == 0) && !isGetErrorMessage) {
+						util.debugWriteLine("curl error ret " + ret);
+						return null;
+					}
+					return ret;
+				} else {
+					var _d = postData == null ? null : Encoding.UTF8.GetBytes(postData);
+					var r22 = util.sendRequest(url, headers, _d, method, null);
+					using (var r2 = r22.GetResponseStream())
+					using (var r3 = new StreamReader(r2)) {
+						var a = r3.ReadToEnd();
+						return a;
+					}
 				}
 				
-				
-				int still_running = 1;
-				var mc = CURLMcode.CURLM_OK;
-				while(still_running != 0) {
-					mc = curl_multi_perform(curlM, out still_running);
-					
-					if(still_running != 0)
-						mc = curl_multi_poll(curlM, IntPtr.Zero, 0, 10000, IntPtr.Zero);
-					
-					if(mc != CURLMcode.CURLM_OK)
-						break;
-				}
-				int msgs_left = 0;
-				IntPtr _msg = IntPtr.Zero;
-				
-				while(true) {
-					_msg = curl_multi_info_read(curlM, out msgs_left);
-					if (_msg == IntPtr.Zero) break;
-					try {
-						var msg = (CURLMsg)Marshal.PtrToStructure(_msg, typeof(CURLMsg));
-						if(msg.msg == CURLMSG.CURLMSG_DONE) {
-							easyData easyD = null;
-							foreach (var _easyD in easyDataList) {
-								if (_easyD.easyPtr == msg.easy_handle) {
-									easyD = _easyD;
-									break;
-								}
-							}
-							if (easyD == null) continue;
-							
-							var _chunk = (MemoryStruct)Marshal.PtrToStructure(easyD.chunkPtr, typeof(MemoryStruct));
-							
-							byte[] dHeader = new Byte[_chunk.sizeHeader];
-							Marshal.Copy(_chunk.memoryHeader, dHeader, 0, _chunk.sizeHeader - 0);
-							
-							byte[] d = new Byte[_chunk.size + (isAddHeader ? _chunk.sizeHeader : 0)];
-							easyD.res = d;
-							Marshal.Copy(_chunk.memory, d, isAddHeader ? _chunk.sizeHeader : 0, _chunk.size);
-							//Debug.WriteLine(_chunk + " " + _chunk.size + " " + _chunk.sizeHeader);
-							if (isAddHeader) Marshal.Copy(_chunk.memoryHeader, d, 0, _chunk.sizeHeader);
+			} catch (Exception e) {
+				Debug.WriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+				return null;
+			}
+		}
+		public byte[] get2(string url, Dictionary<string, string> headers, CurlHttpVersion httpVer, out int httpCode, string method = "GET", byte[] postData = null, bool isAddHeader = false, bool isFollowLocation = true) {
+			byte[] ret = new byte[0];
+			httpCode = 0;
+			var retPtr = IntPtr.Zero;
+			try {
+				var addH = new string[12];
+				foreach (var h in headers) {
+					for (var i = 0; i < addH.Length; i++) {
+						if (string.IsNullOrEmpty(addH[i])) {
+							addH[i] = h.Key + ": " + h.Value;
+							break;
 						}
-						
-					} catch (Exception eee) {
-						Debug.WriteLine(eee.Message + eee.Source + eee.StackTrace);
 					}
-					
 				}
-				foreach (var easyD in easyDataList) {
-					curl_multi_remove_handle(curlM, easyD.easyPtr);
-					curl_easy_cleanup_data(easyD.easyPtr, easyD.chunkPtr, easyD.headerPtr);
-					Marshal.FreeHGlobal(easyD.chunkPtr);
+				
+				int num = 0, headerNum = 0;
+				var a = postData == null ? 0 : postData.Length;
+				var postLen = postData == null ? 0 : postData.Length;
+				retPtr = curl_get(url, method, postData, postLen, httpVer, out num, out headerNum, isFollowLocation, addH[0], addH[1], addH[2], addH[3], addH[4], addH[5], addH[6], addH[7], addH[8], addH[9], addH[10], addH[11]);
+				if (num == 0) {
+					//CURLE_OK以外の場合、numに0、headerNumにcurlcode
+					//通信自体ができなかった場合もCURLE_OKが返ることがあるが取得データは0なのでエラーとして処理
+					//通信途中で問題が起こった場合にもCURLE_OKが返ることがあるのであれば成否判定は課題
+					util.debugWriteLine("curl get error " + headerNum + url);
+					return null;
 				}
+				    
+				Array.Resize(ref ret, num);
+				Marshal.Copy(retPtr, ret, 0, num);
+				
+				var headerStr = Encoding.UTF8.GetString(ret, 0, headerNum);
+				if (headerStr == null) {
+					util.debugWriteLine("header null " + url + " " + num + " " + headerNum);
+					return new byte[]{};
+				}
+				
+				util.debugWriteLine("curl head " + url + " " + new Regex("user_session.+?;").Replace(headerStr, "user_session_num"));
+				var codeMatch = new Regex("(^|\n)HTTP.+ (\\d+)").Matches(headerStr);
+				foreach (Match m in codeMatch)
+					httpCode = int.Parse(m.Groups[2].Value);
+				util.debugWriteLine("httpcode " + httpCode);
+				if (!isAddHeader) {
+					var b = new byte[0];
+					Array.Resize(ref b, num - headerNum);
+					Array.Copy(ret, headerNum, b, 0, b.Length);
+					ret = b;
+				}
+				
+				return ret;
 				
 			} catch (Exception ee) {
 				Debug.WriteLine(ee.Message + ee.Source + ee.StackTrace);
+			} finally {
+				try {
+					memFree(retPtr);
+				} catch (Exception e) {
+					util.debugWriteLine(e.Message + e.Source + e.StackTrace);
+				}
 			}
-			try {
-				if (_postData != IntPtr.Zero)
-					Marshal.FreeHGlobal(_postData);
-			} catch (Exception e) {
-				util.debugWriteLine(e.Message + e.Source + e.StackTrace);
-			}
-			return easyDataList.Select(x => new KeyValuePair<string, byte[]>(x.url, x.res)).ToList();
+			return ret;
 		}
-		
-		//private static int writeCallBack(byte[] ptr, int sz, int nmemb, object userdata) {
-		/*
-		private  IntPtr writeCallBack(IntPtr ptr, IntPtr sz, IntPtr nmemb, IntPtr userdata) {
-			//Debug.WriteLine(Encoding.UTF8.GetString(ptr));
-			return (IntPtr)(sz.ToInt32() * nmemb.ToInt32());
-			//return 0;
-		}
-		*/
 		public struct MemoryStruct {
 			public IntPtr memory;
 			public int size;
@@ -156,108 +171,56 @@ namespace namaichi.utility
 			public int sizeHeader;
 			public CURLcode ret;
 		}
-		[DllImport("libcurl.dll")]
+		[DllImport("libcurl.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr curl_global_init(long flags);
+		[DllImport("libcurl.dll", CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr curl_easy_init();
-		[DllImport("libcurl.dll")]
-		public static extern IntPtr curl_multi_init();
-		[DllImport("libcurl.dll", CharSet = CharSet.Ansi)]
+		[DllImport("libcurl.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
 		public static extern IntPtr curl_easy_setopt(IntPtr curl, CURLoption opt, string s);
-		[DllImport("libcurl.dll")]
-		public static extern IntPtr curl_easy_setopt(IntPtr curl, CURLoption opt, int n);
-		[DllImport("libcurl.dll")]
-		public static extern IntPtr curl_easy_setopt(IntPtr curl, CURLoption opt, IntPtr cb);
-		[DllImport("libcurl.dll")]
-		public static extern IntPtr curl_easy_setopt_header(IntPtr curl, CURLoption opt, IntPtr slist);
-		[DllImport("libcurl.dll")]//MemoryStruct*
-		public static extern IntPtr curl_easy_set_write_data(IntPtr curl, IntPtr chunk);
-		[DllImport("libcurl.dll")]
-		public static extern CURLMcode curl_multi_setopt(IntPtr curl, CURLMoption opt, int n);
-		[DllImport("libcurl.dll")]
-		public static extern CURLMcode curl_multi_remove_handle(IntPtr multi, IntPtr easy);
-		
-		//[DllImport("libcurl.dll")]
-		//public static extern IntPtr curl_easy_setopt(IntPtr curl, CURLoption opt, write_callback cb);
-		[DllImport("libcurl.dll")]
+		[DllImport("libcurl.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr curl_easy_setopt(IntPtr curl, CURLoption opt, long s);
+		[DllImport("libcurl.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
 		public static extern CURLcode curl_easy_perform(IntPtr curl);
-		[DllImport("libcurl.dll")]
-		//public static extern MemoryStruct curl_easy_perform_data(IntPtr curl, MemoryStruct chunk);
-		public static extern MemoryStruct curl_easy_perform_data(IntPtr curl);
-		[DllImport("libcurl.dll")]
-		public static extern CURLMcode curl_multi_perform(IntPtr curlMulti, out int still_running);
-		[DllImport("libcurl.dll")]
-		public static extern CURLMcode curl_multi_add_handle(IntPtr curlMulti, IntPtr easy);
-		[DllImport("libcurl.dll")]
-		public static extern CURLMcode curl_multi_poll(IntPtr multi_handle,
-                                      IntPtr extra_fds,
-                                      int extra_nfds,
-                                      int timeout_ms,
-                                      IntPtr ret);
-		[DllImport("libcurl.dll")]//ret CURLMsg
-		public static extern IntPtr curl_multi_info_read(IntPtr multi_handle, out int msgs_in_queue);
-		
-		[DllImport("libcurl.dll")]
+		[DllImport("libcurl.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+		public static extern string curl_easy_strerror(CURLcode code);
+		[DllImport("libcurl.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
 		public static extern void curl_easy_cleanup(IntPtr curl);
-		[DllImport("libcurl.dll")]
-		public static extern void curl_easy_cleanup_data(IntPtr curl, IntPtr chunkPtr, IntPtr headerList);
-		//public delegate int write_callback(byte[] ptr, int sz, int nmemb, object userdata);
-		//public delegate IntPtr write_callback(IntPtr ptr, IntPtr sz, IntPtr nmemb, IntPtr userdata);
-		[DllImport("libcurl.dll")]
-		public static extern void curl_slist_free_all(IntPtr list);
-		[DllImport("libcurl.dll")]
-		public static extern void memoryFree(IntPtr data);
-		[DllImport("libcurl.dll")]
-		public static extern IntPtr createSlist();
-		[DllImport("libcurl.dll")]
-		public static extern IntPtr addSlist(IntPtr slist, string data);
+		[DllImport("libcurl.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+		public static extern CURLcode curl_ws_send(IntPtr curl, string buffer, int buflen,
+                      out int sent, int fragsize, curlWsFlags flags);
+		[DllImport("libcurl.dll", CharSet = CharSet.Ansi, CallingConvention = CallingConvention.Cdecl)]
+		public static extern CURLcode curl_ws_recv(IntPtr easy, out string buffer, int buflen,
+                      out int recv, out curl_ws_frame meta);
 		
-		private class easyData {
-			public string url = null;
-			public IntPtr easyPtr = IntPtr.Zero;
-			public IntPtr headerPtr = IntPtr.Zero;
-			public IntPtr chunkPtr = IntPtr.Zero;
-			public byte[] res = null;
-			public easyData (string url) {
-				this.url = url;
-			}
-			public bool setEasy(string url, Dictionary<string, string> headers, CurlHttpVersion httpVer, string method, IntPtr postData) {
-				easyPtr = curl_easy_init();
-				if (easyPtr == IntPtr.Zero) {
-					Debug.WriteLine("curl easy init no");
-					return false;
-				}
-				Debug.WriteLine(easyPtr);
-				
-				curl_easy_setopt(easyPtr, CURLoption.CURLOPT_URL, url);
-				curl_easy_setopt(easyPtr, CURLoption.CURLOPT_SSL_VERIFYPEER, 0);
-				curl_easy_setopt(easyPtr, CURLoption.CURLOPT_HTTP_VERSION, (int)httpVer);
-				curl_easy_setopt(easyPtr, CURLoption.CURLOPT_TIMEOUT, 20);
-				curl_easy_setopt(easyPtr, CURLoption.CURLOPT_TIMEOUT, 20);
-				if (method == "POST") {
-					curl_easy_setopt(easyPtr, CURLoption.CURLOPT_POSTFIELDS, postData);
-				}
-				headerPtr = getHeaderSlist(headers);
-				curl_easy_setopt_header(easyPtr, CURLoption.CURLOPT_HTTPHEADER, headerPtr);
-				var chunk = new MemoryStruct();
-				chunkPtr = Marshal.AllocHGlobal(Marshal.SizeOf(typeof(MemoryStruct)));
-				Marshal.StructureToPtr(chunk, chunkPtr, true);
-				curl_easy_set_write_data(easyPtr, chunkPtr);
-				return true;
-			}
-			private IntPtr getHeaderSlist(Dictionary<string, string> headers) {
-				var l = createSlist();
-				foreach (var h in headers) {
-					var _h = h.Key + ": " + h.Value;
-					l = addSlist(l, _h);
-				}
-				return l;
-			}
-		}
+		[DllImport("curl_wrap.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern int testInt(int i, int j);
+		[DllImport("curl_wrap.dll", CallingConvention = CallingConvention.Cdecl)]
+		//public static extern IntPtr curl_get(string url, string method, string sendData, int sendLen, CurlHttpVersion httpVer, out int num, out int headerNum, [MarshalAs(UnmanagedType.LPArray, ArraySubType = UnmanagedType.LPWStr, SizeParamIndex = 8)]string[] headers, int length);
+		public static extern IntPtr curl_get(string url, string method, 
+				//string sendData, int sendLen, CurlHttpVersion httpVer,
+				byte[] sendData, int sendLen, CurlHttpVersion httpVer,
+				out int num, out int headerNum, bool isFollowLocation,
+				string addHeader0,string addHeader1, string addHeader2, 
+				string addHeader3, string addHeader4, string addHeader5, 
+				string addHeader6, string addHeader7, string addHeader8, 
+				string addHeader9, string addHeader10, string addHeader11);
+		[DllImport("curl_wrap.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern void memFree(IntPtr p);
+		
+		//ws
+		[DllImport("curl_wrap.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern CURLcode curl_ws_send_wrap(IntPtr curl, string buffer, int buflen,
+                      out int sent, int fragsize, int flags);
+		[DllImport("curl_wrap.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr curl_ws_recv_wrap(IntPtr curl, out CURLcode retCode, out uint recv);
+		[DllImport("curl_wrap.dll", CallingConvention = CallingConvention.Cdecl)]
+		public static extern IntPtr curl_add_header(IntPtr data, string addHeader0);
+		
 		public static Dictionary<string, string> getDefaultHeaders(string origin = "https://nicochannel.jp") {
 			var h = new Dictionary<string, string>();
 			h.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:101.0) Gecko/20100101 Firefox/102.0");
-			h.Add("Accept", "*/*");
+			
 			h.Add("Accept-Language", "ja,en-US;q=0.7,en;q=0.3");
-			h.Add("Accept-Encoding", "gzip, deflate, br");
 			h.Add("Origin", origin); //"https://nicochannel.jp");
 			h.Add("Connection", "keep-alive");
 			h.Add("Referer", origin + "/"); //"https://nicochannel.jp/");
@@ -268,6 +231,7 @@ namespace namaichi.utility
 			return h;
 		}
 	}
+	
 	public enum CURLoption {
 		CURLOPT_URL = 10002,
 		CURLOPT_SSL_VERIFYPEER = 64,
@@ -278,7 +242,9 @@ namespace namaichi.utility
 		CURLOPT_HTTP_VERSION = 84,
 		CURLOPT_TIMEOUT = 13,
 		CURLOPT_POSTFIELDS = 10015,
-		CURLOPT_POSTFIELDSIZE = 60
+		CURLOPT_POSTFIELDSIZE = 60,
+		CURLOPT_CONNECT_ONLY = 141,
+		CURLOPT_USERAGENT = 10018,
 	}
 	public enum CURLMoption {
 		CURLMOPT_PIPELINING = 3
@@ -467,6 +433,19 @@ namespace namaichi.utility
 		public IntPtr whatever;    /* message-specific data */
 		public CURLcode result;   /* return code for transfer */
 	}
-	
-		
+	[Flags]
+	public enum curlWsFlags {
+		CURLWS_TEXT = (1<<0),
+		CURLWS_BINARY = (1<<1),
+		CURLWS_CONT = (1<<2),
+		CURLWS_CLOSE = (1<<3),
+		CURLWS_PING = (1<<4),
+		CURLWS_OFFSET = (1<<5)
+	}
+	public struct curl_ws_frame {
+		int age;              /* zero */
+		int flags;            /* See the CURLWS_* defines */
+		int offset;    /* the offset of this data into the frame */
+		int bytesleft; /* number of pending bytes left of the payload */
+	}
 }

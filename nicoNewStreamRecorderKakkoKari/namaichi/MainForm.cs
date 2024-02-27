@@ -356,6 +356,21 @@ namespace namaichi
 				});
 			}
 			
+			var osName = config.get("osName");
+			if (osName == "") {
+				osName = util.CheckOSName();
+				config.set("osName", osName);
+			}
+			util.osName = osName;
+			
+			var osType = config.get("osType");
+			if (osType == "") {
+				osType = util.CheckOSType();
+				config.set("osType", osType);
+			}
+			util.debugWriteLine("OS: " + util.osName);
+			util.debugWriteLine("OSType: " + osType);
+				
 			if (args.Length > 0) {
 				var ar = new ArgReader(args, config, this);
 				ar.read();
@@ -690,6 +705,45 @@ namespace namaichi
 		void OpenNotifyIconMenuClick(object sender, EventArgs e)
 		{
 			activateForm();
+		}
+		public void setSamune(string url) {
+       		if (!util.isShowWindow) return;
+       		if (IsDisposed) return;
+       		WebClient cl = new WebClient();
+       		cl.Proxy = null;
+			
+       		System.Drawing.Icon icon =  null;
+			try {
+       			byte[] pic;
+       			if (url.IndexOf("nicochannel.jp") == -1)
+       				pic = cl.DownloadData(url);
+       			else {
+       				string d = null;
+       				var h = new Dictionary<string, string>() {
+						{"User-Agent", util.userAgent}
+					};
+       				pic = new Curl().getBytes(url, h, CurlHttpVersion.CURL_HTTP_VERSION_2TLS, "GET", d, false);
+       				if (pic == null) return;
+       			}
+				
+       			using (var st = new System.IO.MemoryStream(pic)) {
+					icon = Icon.FromHandle(new System.Drawing.Bitmap(st).GetHicon());
+       			}
+				
+			} catch (Exception e) {
+				util.debugWriteLine(e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
+				return;
+			}
+			
+       		formAction(() => {
+				try {
+					if (bool.Parse(config.get("IstitlebarSamune"))) {
+	        	    	this.Icon = icon;
+					}
+				} catch (Exception e) {
+	       			util.debugWriteLine(e.Message + " " + e.StackTrace + " " + e.Source + " " + e.TargetSite);
+	       		}
+			});
 		}
 	}
 }

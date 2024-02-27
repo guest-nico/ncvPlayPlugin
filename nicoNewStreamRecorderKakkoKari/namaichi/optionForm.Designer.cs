@@ -75,6 +75,7 @@ namespace namaichi
 			this.isMinimizedChkBox = new System.Windows.Forms.CheckBox();
 			this.button3 = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
+			this.isTitleBarSamune = new System.Windows.Forms.CheckBox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage6.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -462,6 +463,7 @@ namespace namaichi
 			// 
 			// groupBox6
 			// 
+			this.groupBox6.Controls.Add(this.isTitleBarSamune);
 			this.groupBox6.Controls.Add(this.isMinimizeNotifyChkBox);
 			this.groupBox6.Controls.Add(this.isMinimizedChkBox);
 			this.groupBox6.Location = new System.Drawing.Point(5, 10);
@@ -509,6 +511,15 @@ namespace namaichi
 			this.button4.UseVisualStyleBackColor = true;
 			this.button4.Click += new System.EventHandler(this.optionCancel_Click);
 			// 
+			// isTitleBarSamune
+			// 
+			this.isTitleBarSamune.Location = new System.Drawing.Point(19, 62);
+			this.isTitleBarSamune.Name = "isTitleBarSamune";
+			this.isTitleBarSamune.Size = new System.Drawing.Size(271, 19);
+			this.isTitleBarSamune.TabIndex = 3;
+			this.isTitleBarSamune.Text = "サムネイルをタイトルバーに表示する";
+			this.isTitleBarSamune.UseVisualStyleBackColor = true;
+			// 
 			// optionForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -536,6 +547,7 @@ namespace namaichi
 			this.groupBox6.ResumeLayout(false);
 			this.ResumeLayout(false);
 		}
+		private System.Windows.Forms.CheckBox isTitleBarSamune;
 		private System.Windows.Forms.CheckBox isMinimizedChkBox;
 		private System.Windows.Forms.CheckBox isMinimizeNotifyChkBox;
 		private System.Windows.Forms.GroupBox groupBox6;

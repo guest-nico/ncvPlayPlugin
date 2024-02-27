@@ -103,13 +103,16 @@ namespace ncvPlayPlugin
 					getControls(host.MainForm, _cc);
 					foreach(var _c in _cc) {
 						if (_c == null) continue;
-						var lv = util.getRegGroup(_c.Text, "watch/(lv\\d+)");
-						if (lv != null) _p.StartInfo.Arguments = lv;
+						var lv = util.getRegGroup(_c.Text, "(lv\\d+)");
+						
+						if (lv != null && _c.Parent != null && _c.Parent.Name.IndexOf("tool") > -1) {
+							_p.StartInfo.Arguments = lv;
+						}
 					}
-					
 				}
-			} catch (Exception) {
+			} catch (Exception ee) {
 				Debug.WriteLine(ee.Message + ee.StackTrace + ee.Source);
+				MessageBox.Show("e " + ee.Message + " " + ee.StackTrace);
 			}
 			_p.Start();
 			return _p;
@@ -128,8 +131,10 @@ namespace ncvPlayPlugin
 					getControls(host.MainForm, _cc);
 					foreach(var _c in _cc) {
 						if (_c == null) continue;
-						var _lv = util.getRegGroup(_c.Text, "watch/(lv\\d+)");
-						if (_lv != null) lv += _lv;
+						var _lv = util.getRegGroup(_c.Text, "(lv\\d+)");
+						
+						if (lv != null && _c.Parent != null && _c.Parent.Name.IndexOf("tool") > -1)
+							lv += _lv + " "; 
 					}
 				}
 				//var lv = host.GetHeartBeat().LiveNum;//.GetLiveInfo().WssUrl;

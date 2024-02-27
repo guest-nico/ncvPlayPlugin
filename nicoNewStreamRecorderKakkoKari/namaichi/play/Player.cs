@@ -209,6 +209,10 @@ namespace namaichi.play
 					form.rec.hlsUrl.IndexOf("end") == -1;
 		}
 		private void playCommand(string exe, string args) {
+			if (!File.Exists(exe)) {
+				form.addLogText("プレイヤーのパスが設定されていませんでした");
+				return;
+			}
 			process = new System.Diagnostics.Process();
 			process.StartInfo.FileName = exe;
 //			process.StartInfo.RedirectStandardOutput = true;

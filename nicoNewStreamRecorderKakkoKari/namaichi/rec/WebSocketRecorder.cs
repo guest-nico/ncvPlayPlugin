@@ -37,7 +37,7 @@ namespace namaichi.rec
 		private CookieContainer container;
 		private string[] recFolderFile;
 		private RecordingManager rm;
-		private RecordFromUrl rfu;
+		public RecordFromUrl rfu;
 		public Html5Recorder h5r;
 		private WebSocket ws;
 		//private WebSocket wsc;
@@ -47,7 +47,7 @@ namespace namaichi.rec
 		//public string[] msReq;
 		//private long serverTime;
 		//private string ticket;
-		private bool isRetry = true;
+		public bool isRetry = true;
 		//private string msThread;
 		//private string sendCommentBuf = null;
 		//private bool isSend184 = true;
@@ -98,6 +98,10 @@ namespace namaichi.rec
 		private string selectQuality = null;
 		private string selectLatency = null;
 		
+		private WebSocketCurl wsCurl = null;
+		private WebSocketCurl[] wscCurl = new WebSocketCurl[2];
+		bool isUseCurlWs = false;
+		
 		public WebSocketRecorder(string[] webSocketInfo, 
 				CookieContainer container, string[] recFolderFile, 
 				RecordingManager rm, RecordFromUrl rfu, 
@@ -134,6 +138,9 @@ namespace namaichi.rec
 			this.isGetCommentXml = rm.cfg.get("IsgetcommentXml");
 			this.engineMode = rm.cfg.get("EngineMode");
 			selectLatency = latency;
+			
+			isUseCurlWs = false || !util.isWin10Later();
+			util.debugWriteLine("isUseCurl() " + util.isWin10Later());
 		}
 		public bool start(bool isRtmpOnlyPage) {
 			addDebugBuf("ws rec start");
@@ -201,28 +208,16 @@ namespace namaichi.rec
 //			while (rm.rfu == rfu && ws != null && isRetry && 
 //			       (rec == null || !rec.isStopRead())) {
 			while (rm.rfu == rfu && isRetry) {
-				/*
-				if (isTimeShift && rm.rfu == rfu && 
-				    	isGetComment == "true" && engineMode == "3" &&
-				    	tscg != null && tscg.isEnd) {
-					break;
+				if (isUseCurlWs) {
+					Thread.Sleep(3000);
+				} else {
+					if (!isRtmp && ws.State == WebSocket4Net.WebSocketState.Closed) {
+						addDebugBuf("no connect loop ws close");
+	//					connect();
+					}
+					
+					System.Threading.Thread.Sleep(1000);
 				}
-				*/
-//				if (rec != null) 
-//					addDebugBuf("isStopread " + rec.isStopRead());
-				
-				
-				if (!isRtmp && ws.State == WebSocket4Net.WebSocketState.Closed) {
-					addDebugBuf("no connect loop ws close");
-//					connect();
-				}
-				
-//				if (DateTime.Now > DateTime.Parse("2018/10/19 4:43")) resetWebsocketInfo();
-				//test
-//				GC.Collect();
-//				GC.WaitForPendingFinalizers();
-				
-				System.Threading.Thread.Sleep(1000);
 			}
 //			while (isTimeShift && rm.rfu == rfu) 
 //				System.Threading.Thread.Sleep(300);
@@ -271,13 +266,17 @@ namespace namaichi.rec
 				addDebugBuf("after wait reset  " + " wsList " + wsList.Count);
 			}
 			
+			return !isUseCurlWs ?
+				connectWebSocketCore() :
+				connectWebSocketCoreLib();
+		}
+		private bool connectWebSocketCore() {
 			if (ws != null)
 				addDebugBuf("ws connect " + ws.GetHashCode());
 			try {
 				//ws = new WebSocket(webSocketInfo[0]);
 				addDebugBuf("ws connect webSocketInfo[0] " + webSocketInfo[0] + " wsList " + wsList.Count);
-				//ws = new WebSocket(webSocketInfo[0], "", null, null, "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36", "", WebSocketVersion.Rfc6455, null, SslProtocols.Tls12);
-				ws = new WebSocket(webSocketInfo[0], "", null, null, "Mozilla/5.0 (Windows NT 6.1; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/68.0.3440.106 Safari/537.36", "", WebSocketVersion.Rfc6455, null, SslProtocols.None);
+				ws = new WebSocket(webSocketInfo[0], "", null, null, util.userAgent, "", WebSocketVersion.Rfc6455, null, SslProtocols.Tls12 | SslProtocols.Tls11 | SslProtocols.Tls);
 				ws.Opened += onOpen;
 				ws.Closed += onClose;
 				ws.DataReceived += onDataReceive;
@@ -393,7 +392,6 @@ namespace namaichi.rec
 		}
 		private void onMessageReceive(object sender, MessageReceivedEventArgs e) {
 			addDebugBuf("receive " + e.Message);
-			var type = util.getRegGroup(e.Message, "\"" + (webSocketInfo[2] == "1" ? "command" : "type") + "\":\"(.+?)\"");
 			
 			if (sender != ws) {
 				((WebSocket)sender).Close();
@@ -402,6 +400,11 @@ namespace namaichi.rec
 			
 //			addDebugBuf("ws " + ws);
 			if (ws == null) return;
+			
+			onMessageReceiveCore(e.Message);
+		}
+		internal void onMessageReceiveCore(string message) {
+			var type = util.getRegGroup(message, "\"" + (webSocketInfo[2] == "1" ? "command" : "type") + "\":\"(.+?)\"");
 			//pong
 			if (type == "ping") {
 				sendPong();
@@ -424,8 +427,8 @@ namespace namaichi.rec
 //				if (engineMode == "3") return;
 				
 				string[] gettableList = null;
-				var bestGettableQuolity = getBestGettableQuolity(e.Message, out gettableList);
-				var currentQuality = util.getRegGroup(e.Message, "\"quality\":\"(.+?)\"");
+				var bestGettableQuolity = getBestGettableQuolity(message, out gettableList);
+				var currentQuality = util.getRegGroup(message, "\"quality\":\"(.+?)\"");
 				//var gettableList = util.getRegGroup(e.Message, "\"availableQualities\"\\:\\[(.+?)\\]").Replace("\"", "").Split(',');
 				
 				int listCount = 0;
@@ -438,9 +441,9 @@ namespace namaichi.rec
 						if (isFirstChoiceQuality(currentQuality, bestGettableQuolity)) {
 							rm.form.setQualityList(gettableList, currentQuality);
 							if (isRtmp) {
-								rtmpRecord(e.Message, currentQuality);
+								rtmpRecord(message, currentQuality);
 							} else {
-								record(e.Message, currentQuality);
+								record(message, currentQuality);
 							}
 						} else 
 							sendUseableStreamGetCommand(bestGettableQuolity);
@@ -448,9 +451,9 @@ namespace namaichi.rec
 						if (currentQuality == listText) {
 							
 							if (isRtmp) {
-								rtmpRecord(e.Message, currentQuality);
+								rtmpRecord(message, currentQuality);
 							} else {
-								record(e.Message, currentQuality);
+								record(message, currentQuality);
 							}
 						} else 
 							sendUseableStreamGetCommand(listText);
@@ -460,22 +463,22 @@ namespace namaichi.rec
 			}
 			
 			//new stream retry
-			if (e.Message.IndexOf("\"NO_PERMISSION\"") >= 0
-			    || e.Message.IndexOf("\"TAKEOVER\"") >= 0
-			    || e.Message.IndexOf("\"SERVICE_TEMPORARILY_UNAVAILABLE\"") >= 0
-			   	|| e.Message.IndexOf("\"END_PROGRAM\"") >= 0
-			    || e.Message.IndexOf("\"TOO_MANY_CONNECTIONS\"") >= 0
-			    || e.Message.IndexOf("\"TEMPORARILY_CROWDED\"") >= 0
-			    || e.Message.IndexOf("\"CROWDED\"") >= 0
-			   	|| e.Message.IndexOf("\"CONNECT_ERROR\"") >= 0
-			   	|| e.Message.IndexOf("\"NO_STREAM_AVAILABLE\"") > -1) {
-				if (e.Message.IndexOf("\"TAKEOVER\"") >= 0 && !isRtmp) rm.form.addLogText("追い出されました。");
+			if (message.IndexOf("\"NO_PERMISSION\"") >= 0
+			    || message.IndexOf("\"TAKEOVER\"") >= 0
+			    || message.IndexOf("\"SERVICE_TEMPORARILY_UNAVAILABLE\"") >= 0
+			   	|| message.IndexOf("\"END_PROGRAM\"") >= 0
+			    || message.IndexOf("\"TOO_MANY_CONNECTIONS\"") >= 0
+			    || message.IndexOf("\"TEMPORARILY_CROWDED\"") >= 0
+			    || message.IndexOf("\"CROWDED\"") >= 0
+			   	|| message.IndexOf("\"CONNECT_ERROR\"") >= 0
+			   	|| message.IndexOf("\"NO_STREAM_AVAILABLE\"") > -1) {
+				if (message.IndexOf("\"TAKEOVER\"") >= 0 && !isRtmp) rm.form.addLogText("追い出されました。");
 				
 				//SERVICE_TEMPORARILY_UNAVAILABLE 予約枠開始後に何らかの問題？
-				if (e.Message.IndexOf("\"SERVICE_TEMPORARILY_UNAVAILABLE\"") > 0 && !isRtmp) 
+				if (message.IndexOf("\"SERVICE_TEMPORARILY_UNAVAILABLE\"") > 0 && !isRtmp) 
 					rm.form.addLogText("サーバーからデータの受信ができませんでした。リトライします。");
 				
-				if (e.Message.IndexOf("\"END_PROGRAM\"") > 0 || e.Message.IndexOf("\"NO_STREAM_AVAILABLE\"") > -1) {
+				if (message.IndexOf("\"END_PROGRAM\"") > 0 || message.IndexOf("\"NO_STREAM_AVAILABLE\"") > -1) {
 					isEndProgram = true;
 					isRetry = false;
 					if (rr != null) rr.retryMode = 2;
@@ -484,15 +487,15 @@ namespace namaichi.rec
 				
 //				connect(webSocketInfo[0].Replace("\"requireNewStream\":false", "\"requireNewStream\":true"));
 				isNoPermission = true;
-				if (e.Message.IndexOf("\"TEMPORARILY_CROWDED\"") >= 0 ||
-				    	e.Message.IndexOf("\"CONNECT_ERROR\"") >= 0) {
+				if (message.IndexOf("\"TEMPORARILY_CROWDED\"") >= 0 ||
+				    	message.IndexOf("\"CONNECT_ERROR\"") >= 0) {
 					isWaitNextConnection = true;
 					//{"type":"error","body":{"code":"CONNECT_ERROR"}}
 					
-					if ((e.Message.IndexOf("\"TEMPORARILY_CROWDED\"") >= 0 || e.Message.IndexOf("CROWDED") > -1) && !isRtmp)
+					if ((message.IndexOf("\"TEMPORARILY_CROWDED\"") >= 0 || message.IndexOf("CROWDED") > -1) && !isRtmp)
 						rm.form.addLogText("満員でした");
 					
-					if (e.Message.IndexOf("\"CONNECT_ERROR\"") >= 0 && !isRtmp)
+					if (message.IndexOf("\"CONNECT_ERROR\"") >= 0 && !isRtmp)
 						rm.form.addLogText("接続エラーでした");
 					#if DEBUG
 					#endif
@@ -503,7 +506,7 @@ namespace namaichi.rec
 //				         	sendIntervalPong();
 //				         });
 				}
-			} else if (e.Message.IndexOf("\"INTERNAL_SERVERERROR\"") >= 0) {
+			} else if (message.IndexOf("\"INTERNAL_SERVERERROR\"") >= 0) {
 				try {
 					ws.Close();
 				} catch (Exception ee) {
@@ -523,9 +526,9 @@ namespace namaichi.rec
 //				         	sendIntervalPong();
 //				         });
 			}
-			if (e.Message.IndexOf("\"notifyType\":\"reconnect\"") >= 0) {
+			if (message.IndexOf("\"notifyType\":\"reconnect\"") >= 0) {
 				//{"type":"notify","body":{"notifyType":"reconnect","audienceToken":"8269898711679_225832_1539687621_2779cc2ce649ffb2d8aad1ac5a90d025ee83b8b4","reconnectWaitTime":1}}
-				var waitTime = util.getRegGroup(e.Message, "\"reconnectWaitTime\":(\\d+)");
+				var waitTime = util.getRegGroup(message, "\"reconnectWaitTime\":(\\d+)");
 				if (waitTime == null) return;
 				Thread.Sleep(int.Parse(waitTime) * 1000);
 				
@@ -543,10 +546,10 @@ namespace namaichi.rec
 			}
 			if (type == "serverTime" || type == "servertime") {
 				if (webSocketInfo[2] == "1") {
-					var _t = (int)(long.Parse(util.getRegGroup(e.Message, "(\\d+)")) / 1000);
+					var _t = (int)(long.Parse(util.getRegGroup(message, "(\\d+)")) / 1000);
 					jisa = util.getUnixToDatetime(_t) - DateTime.Now;
 				} else {
-					var _t = DateTime.Parse(util.getRegGroup(e.Message, "\"currentMs\":\"(.+?)\""));
+					var _t = DateTime.Parse(util.getRegGroup(message, "\"currentMs\":\"(.+?)\""));
 					jisa = _t - DateTime.Now;
 				}
 				
@@ -556,13 +559,13 @@ namespace namaichi.rec
 				//if (isSub) return;
 				DateTime beginTime, endTime;
 				if (webSocketInfo[2] == "1") {
-					var _beginTime = (int)(long.Parse(util.getRegGroup(e.Message, "\"begintime\":(\\d+)")) / 1000);
-					var _endTime = (int)(long.Parse(util.getRegGroup(e.Message, "\"endtime\":(\\d+)")) / 1000);
+					var _beginTime = (int)(long.Parse(util.getRegGroup(message, "\"begintime\":(\\d+)")) / 1000);
+					var _endTime = (int)(long.Parse(util.getRegGroup(message, "\"endtime\":(\\d+)")) / 1000);
 					beginTime = util.getUnixToDatetime(_beginTime);
 					endTime = util.getUnixToDatetime(_endTime);
 				} else {
-					beginTime = DateTime.Parse(util.getRegGroup(e.Message, "\"begin\":\"(.+?)\""));
-					endTime = DateTime.Parse(util.getRegGroup(e.Message, "\"end\":\"(.+?)\""));
+					beginTime = DateTime.Parse(util.getRegGroup(message, "\"begin\":\"(.+?)\""));
+					endTime = DateTime.Parse(util.getRegGroup(message, "\"end\":\"(.+?)\""));
 				}
 				programTime = endTime - beginTime;
 				
@@ -770,7 +773,16 @@ namespace namaichi.rec
 			var isEnd = (type == 7 || type == 2 || type == 3 || type == 9);
 			return isEnd;
 		}
-		
+		public void endProgramCheck() {
+			addDebugBuf("endProgramCheck");
+			//if ((!ri.si.isTimeShift || ri.isChase) && isEndedProgram()) {
+			if (isEndedProgram()) {
+		        addDebugBuf("isEndprogram websocket");
+				isRetry = false;
+				if (rr != null) rr.retryMode = 2;
+				isEndProgram = true;
+			}
+		}
 		private void startDebugWriter() {
 			#if !DEBUG
 				//return;
@@ -835,7 +847,11 @@ namespace namaichi.rec
 		}
 		private void sendMessage(WebSocket w, string s) {
 			util.debugWriteLine("ws send " + s);
-			w.Send(s);
+			if (isUseCurlWs) {
+				if (wsCurl != null) wsCurl.wsSend(s);
+			} else {
+				w.Send(s);
+			}
 		}
 		private void rtmpRecord(string websocketMsg, string quality) {
 			string url = null;
@@ -877,6 +893,24 @@ namespace namaichi.rec
 				ws.Close();
 			}
 			selectLatency = l;
+		}
+		private bool connectWebSocketCoreLib() {
+			try {
+				webSocketInfo[1] = webSocketInfo[2] == "1" ?
+							webSocketInfo[1].Replace("\"requireNewStream\":false", "\"requireNewStream\":true")
+							: webSocketInfo[1].Replace("\"reconnect\":true", "\"reconnect\":false");
+				wsCurl = new WebSocketCurl(rm, this, webSocketInfo);
+				Task.Factory.StartNew(
+						() => wsCurl.connect(), TaskCreationOptions.LongRunning);
+				
+			} catch (Exception ee) {
+				addDebugBuf("ws connect exception " + ee.Message + ee.Source + ee.StackTrace + ee.TargetSite);
+				Task.Run(() => {
+				    endProgramCheck();
+				});
+				return false;
+			}
+			return true;
 		}
 	}
 }

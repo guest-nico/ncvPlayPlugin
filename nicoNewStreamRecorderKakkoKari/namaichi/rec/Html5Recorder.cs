@@ -292,6 +292,12 @@ namespace namaichi.rec
 					recFolderFile = new string[]{"", "", ""};
 				}
 				
+				//display set
+				var rss = new RecordStateSetter(rm.form, false);
+				Task.Run(() => {
+				       	rss.set(data, res);
+				});
+				
 				var userId = util.getRegGroup(res, "\"user\"\\:\\{\"user_id\"\\:(.+?),");
 				var isPremium = res.IndexOf("\"member_status\":\"premium\"") > -1;
 				var wsr = new WebSocketRecorder(webSocketRecInfo, container, recFolderFile, rm, rfu, this, openTime, lastSegmentNo, isTimeShift, lvid, timeShiftConfig, userId, isPremium, programTime, type, _openTime, isSub, isRtmp, latency);

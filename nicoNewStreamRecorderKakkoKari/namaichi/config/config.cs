@@ -203,6 +203,8 @@ public class config
 			{"rokugaTourokuQualityRank","0,1,2,3,4,5,6,7,8,9"},
 			{"X",""},
 			{"Y",""},
+			{"osName",""},
+			{"osType",""},
 			
 			{"recBackColor","-1"},
 			{"recForeColor","-16777216"},

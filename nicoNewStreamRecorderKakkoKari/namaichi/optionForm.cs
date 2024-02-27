@@ -116,6 +116,7 @@ namespace namaichi
 				
 				{"Isminimized",isMinimizedChkBox.Checked.ToString().ToLower()},
 				{"IsMinimizeNotify",isMinimizeNotifyChkBox.Checked.ToString().ToLower()},
+				{"IstitlebarSamune",isTitleBarSamune.Checked.ToString().ToLower()},
 			};
 			
 		}
@@ -210,6 +211,7 @@ namespace namaichi
         	
         	isMinimizedChkBox.Checked = bool.Parse(cfg.get("Isminimized"));
         	isMinimizeNotifyChkBox.Checked = bool.Parse(cfg.get("IsMinimizeNotify"));
+        	isTitleBarSamune.Checked = bool.Parse(cfg.get("IstitlebarSamune"));
         }
         
 		void optionCancel_Click(object sender, EventArgs e)
