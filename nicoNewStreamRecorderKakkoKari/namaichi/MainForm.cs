@@ -745,5 +745,14 @@ namespace namaichi
 	       		}
 			});
 		}
+		public void setTitle(string s) {
+			formAction(() => {
+				try {
+					Text = s;
+				} catch (Exception e) {
+					util.debugWriteLine(e.Message + e.Source + e.StackTrace + e.TargetSite);
+		       	}
+			});
+		}
 	}
 }

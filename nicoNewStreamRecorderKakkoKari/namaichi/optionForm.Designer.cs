@@ -70,12 +70,15 @@ namespace namaichi
 			this.btnReload = new System.Windows.Forms.Button();
 			this.useSecondLoginChkBox = new System.Windows.Forms.CheckBox();
 			this.tabPage1 = new System.Windows.Forms.TabPage();
+			this.groupBox2 = new System.Windows.Forms.GroupBox();
+			this.fileNameTypeDokujiSetteiBtn = new System.Windows.Forms.Button();
+			this.isTitleBarInfoChkBox = new System.Windows.Forms.CheckBox();
+			this.isTitleBarSamune = new System.Windows.Forms.CheckBox();
 			this.groupBox6 = new System.Windows.Forms.GroupBox();
 			this.isMinimizeNotifyChkBox = new System.Windows.Forms.CheckBox();
 			this.isMinimizedChkBox = new System.Windows.Forms.CheckBox();
 			this.button3 = new System.Windows.Forms.Button();
 			this.button4 = new System.Windows.Forms.Button();
-			this.isTitleBarSamune = new System.Windows.Forms.CheckBox();
 			this.tabControl1.SuspendLayout();
 			this.tabPage6.SuspendLayout();
 			this.groupBox1.SuspendLayout();
@@ -85,6 +88,7 @@ namespace namaichi
 			this.tabPage2.SuspendLayout();
 			this.groupBox3.SuspendLayout();
 			this.tabPage1.SuspendLayout();
+			this.groupBox2.SuspendLayout();
 			this.groupBox6.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -453,6 +457,7 @@ namespace namaichi
 			// 
 			// tabPage1
 			// 
+			this.tabPage1.Controls.Add(this.groupBox2);
 			this.tabPage1.Controls.Add(this.groupBox6);
 			this.tabPage1.Location = new System.Drawing.Point(4, 22);
 			this.tabPage1.Name = "tabPage1";
@@ -461,17 +466,57 @@ namespace namaichi
 			this.tabPage1.Text = "一般";
 			this.tabPage1.UseVisualStyleBackColor = true;
 			// 
+			// groupBox2
+			// 
+			this.groupBox2.Controls.Add(this.fileNameTypeDokujiSetteiBtn);
+			this.groupBox2.Controls.Add(this.isTitleBarInfoChkBox);
+			this.groupBox2.Controls.Add(this.isTitleBarSamune);
+			this.groupBox2.Location = new System.Drawing.Point(5, 81);
+			this.groupBox2.Name = "groupBox2";
+			this.groupBox2.Size = new System.Drawing.Size(379, 133);
+			this.groupBox2.TabIndex = 2;
+			this.groupBox2.TabStop = false;
+			this.groupBox2.Text = "表示設定";
+			// 
+			// fileNameTypeDokujiSetteiBtn
+			// 
+			this.fileNameTypeDokujiSetteiBtn.Enabled = false;
+			this.fileNameTypeDokujiSetteiBtn.Location = new System.Drawing.Point(6, 67);
+			this.fileNameTypeDokujiSetteiBtn.Name = "fileNameTypeDokujiSetteiBtn";
+			this.fileNameTypeDokujiSetteiBtn.Size = new System.Drawing.Size(353, 21);
+			this.fileNameTypeDokujiSetteiBtn.TabIndex = 4;
+			this.fileNameTypeDokujiSetteiBtn.UseVisualStyleBackColor = true;
+			this.fileNameTypeDokujiSetteiBtn.Click += new System.EventHandler(this.FileNameDokujiSetteiBtn_Click);
+			// 
+			// isTitleBarInfoChkBox
+			// 
+			this.isTitleBarInfoChkBox.Location = new System.Drawing.Point(19, 40);
+			this.isTitleBarInfoChkBox.Name = "isTitleBarInfoChkBox";
+			this.isTitleBarInfoChkBox.Size = new System.Drawing.Size(271, 19);
+			this.isTitleBarInfoChkBox.TabIndex = 3;
+			this.isTitleBarInfoChkBox.Text = "放送情報をタイトルバーに表示する";
+			this.isTitleBarInfoChkBox.UseVisualStyleBackColor = true;
+			this.isTitleBarInfoChkBox.CheckedChanged += new System.EventHandler(this.IsTitleBarInfoChkBoxCheckedChanged);
+			// 
+			// isTitleBarSamune
+			// 
+			this.isTitleBarSamune.Location = new System.Drawing.Point(19, 18);
+			this.isTitleBarSamune.Name = "isTitleBarSamune";
+			this.isTitleBarSamune.Size = new System.Drawing.Size(271, 19);
+			this.isTitleBarSamune.TabIndex = 3;
+			this.isTitleBarSamune.Text = "サムネイルをタイトルバーに表示する";
+			this.isTitleBarSamune.UseVisualStyleBackColor = true;
+			// 
 			// groupBox6
 			// 
-			this.groupBox6.Controls.Add(this.isTitleBarSamune);
 			this.groupBox6.Controls.Add(this.isMinimizeNotifyChkBox);
 			this.groupBox6.Controls.Add(this.isMinimizedChkBox);
 			this.groupBox6.Location = new System.Drawing.Point(5, 10);
 			this.groupBox6.Name = "groupBox6";
-			this.groupBox6.Size = new System.Drawing.Size(379, 403);
+			this.groupBox6.Size = new System.Drawing.Size(379, 65);
 			this.groupBox6.TabIndex = 1;
 			this.groupBox6.TabStop = false;
-			this.groupBox6.Text = "Recorder設定";
+			this.groupBox6.Text = "環境設定";
 			// 
 			// isMinimizeNotifyChkBox
 			// 
@@ -511,15 +556,6 @@ namespace namaichi
 			this.button4.UseVisualStyleBackColor = true;
 			this.button4.Click += new System.EventHandler(this.optionCancel_Click);
 			// 
-			// isTitleBarSamune
-			// 
-			this.isTitleBarSamune.Location = new System.Drawing.Point(19, 62);
-			this.isTitleBarSamune.Name = "isTitleBarSamune";
-			this.isTitleBarSamune.Size = new System.Drawing.Size(271, 19);
-			this.isTitleBarSamune.TabIndex = 3;
-			this.isTitleBarSamune.Text = "サムネイルをタイトルバーに表示する";
-			this.isTitleBarSamune.UseVisualStyleBackColor = true;
-			// 
 			// optionForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -544,9 +580,13 @@ namespace namaichi
 			this.groupBox3.ResumeLayout(false);
 			this.groupBox3.PerformLayout();
 			this.tabPage1.ResumeLayout(false);
+			this.groupBox2.ResumeLayout(false);
 			this.groupBox6.ResumeLayout(false);
 			this.ResumeLayout(false);
 		}
+		private System.Windows.Forms.Button fileNameTypeDokujiSetteiBtn;
+		private System.Windows.Forms.CheckBox isTitleBarInfoChkBox;
+		private System.Windows.Forms.GroupBox groupBox2;
 		private System.Windows.Forms.CheckBox isTitleBarSamune;
 		private System.Windows.Forms.CheckBox isMinimizedChkBox;
 		private System.Windows.Forms.CheckBox isMinimizeNotifyChkBox;

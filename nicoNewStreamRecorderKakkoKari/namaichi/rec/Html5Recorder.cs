@@ -297,6 +297,10 @@ namespace namaichi.rec
 				Task.Run(() => {
 				       	rss.set(data, res);
 				});
+				Task.Run(() => {
+				        setTitle(res);
+				        
+				});
 				
 				var userId = util.getRegGroup(res, "\"user\"\\:\\{\"user_id\"\\:(.+?),");
 				var isPremium = res.IndexOf("\"member_status\":\"premium\"") > -1;
@@ -539,6 +543,13 @@ namespace namaichi.rec
 						return false;
 			}
 			return true;
+		}
+		void setTitle(string res) {
+			var si = new StreamInfo(url, lvid, isTimeShift, false);
+			si.set(res);
+			si.getTimeInfo();
+			var fileName = util.getDokujiSetteiFileName(si.recFolderFileInfo[0], si.recFolderFileInfo[1], si.recFolderFileInfo[2], si.recFolderFileInfo[3], si.recFolderFileInfo[4], rm.cfg.get("filenameformat"), util.getUnixToDatetime(si.openTime));
+			rm.form.setTitle(fileName);
 		}
 	}
 }

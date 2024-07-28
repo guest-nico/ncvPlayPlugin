@@ -59,17 +59,12 @@ namespace namaichi
 			util.debugWriteLine(f.SelectedPath);
 //			recordDirectoryText.Text = f.SelectedPath;
 		}
-		
-		void fileNameOptionBtn(object sender, EventArgs e)
-		{
-			
-		}
 		void FileNameDokujiSetteiBtn_Click(object sender, EventArgs e)
 		{
 			var a = new fileNameOptionForm(fileNameFormat);
 			var res = a.ShowDialog();
 			if (res != DialogResult.OK) return;
-//			fileNameTypeDokujiSetteiBtn.Text = util.getFileNameTypeSample(a.ret);
+			fileNameTypeDokujiSetteiBtn.Text = util.getFileNameTypeSample(a.ret);
 			fileNameFormat = a.ret;
 		}
 		
@@ -117,6 +112,8 @@ namespace namaichi
 				{"Isminimized",isMinimizedChkBox.Checked.ToString().ToLower()},
 				{"IsMinimizeNotify",isMinimizeNotifyChkBox.Checked.ToString().ToLower()},
 				{"IstitlebarSamune",isTitleBarSamune.Checked.ToString().ToLower()},
+				{"IstitlebarInfo",isTitleBarInfoChkBox.Checked.ToString().ToLower()},
+				{"filenameformat",fileNameFormat},
 			};
 			
 		}
@@ -212,6 +209,11 @@ namespace namaichi
         	isMinimizedChkBox.Checked = bool.Parse(cfg.get("Isminimized"));
         	isMinimizeNotifyChkBox.Checked = bool.Parse(cfg.get("IsMinimizeNotify"));
         	isTitleBarSamune.Checked = bool.Parse(cfg.get("IstitlebarSamune"));
+        	isTitleBarInfoChkBox.Checked = 
+        			fileNameTypeDokujiSetteiBtn.Enabled = 
+        				bool.Parse(cfg.get("IstitlebarInfo"));
+        	fileNameFormat = cfg.get("filenameformat");
+        	fileNameTypeDokujiSetteiBtn.Text = util.getFileNameTypeSample(fileNameFormat);
         }
         
 		void optionCancel_Click(object sender, EventArgs e)
@@ -410,6 +412,11 @@ namespace namaichi
 			}
 			util.debugWriteLine(c.Name + " " + ret.Count);
 			return ret;
+		}
+		
+		void IsTitleBarInfoChkBoxCheckedChanged(object sender, EventArgs e)
+		{
+			fileNameTypeDokujiSetteiBtn.Enabled = isTitleBarInfoChkBox.Checked;
 		}
 	}
 }

@@ -23,8 +23,8 @@ class app {
 	}
 }
 class util {
-	public static string versionStr = "ver0.1.21";
-	public static string versionDayStr = "2024/02/27";
+	public static string versionStr = "ver0.1.22";
+	public static string versionDayStr = "2024/07/29";
 	public static bool isShowWindow = true;
 	public static bool isStdIO = false;
 	public static WebProxy httpProxy = null;
@@ -52,7 +52,10 @@ class util {
 		
 	}
 	public static int getUnixTime() {
-		return (int)(((TimeSpan)(DateTime.Now - new DateTime(1970, 1, 1))).TotalSeconds);
+		return getUnixTime(DateTime.Now);
+	}
+	public static int getUnixTime(DateTime dt) {
+		return (int)(((TimeSpan)(dt - new DateTime(1970, 1, 1))).TotalSeconds);
 	}
 	public static String[] getJarPath() {
 		bool isTestMode = false;
@@ -236,7 +239,7 @@ class util {
 		else if (n == "8") return host + "_" + communityNum + "";
 		else return host;
 	}
-	private static string getFileName(string host, string group, string title, string lvId, string communityNum, config cfg, long _openTime) {
+	public static string getFileName(string host, string group, string title, string lvId, string communityNum, config cfg, long _openTime) {
 		var n = cfg.get("fileNameType");
 		//var _hiduke = DateTime.Now;
 		var _hiduke = getUnixToDatetime(_openTime);
@@ -1023,7 +1026,7 @@ class util {
 		return null;
 	}
 	public static string userAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
-	public static Dictionary<string, string> getHeader(CookieContainer cc, string referer, string url) {
+	public static Dictionary<string, string> getHeader(CookieContainer cc = null, string referer = null, string url = null) {
 		var ret = new Dictionary<string, string>() {
 			{"Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8"},
 			{"Accept-Language", "ja,en-US;q=0.7,en;q=0.3"},

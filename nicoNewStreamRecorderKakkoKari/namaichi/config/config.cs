@@ -146,7 +146,7 @@ public class config
 			{"IshosoInfo","false"},
 			{"IsDescriptionTag","false"},
 			{"Islog","false"},
-			{"IstitlebarInfo","true"},
+			{"IstitlebarInfo","false"},
 			{"Islimitpopup","true"},
 			{"Isretry","true"},
 			{"IsdeleteExit","false"},
