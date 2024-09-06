@@ -43,6 +43,9 @@ namespace namaichi
 			this.panel3 = new System.Windows.Forms.Panel();
 			this.button1 = new System.Windows.Forms.Button();
 			this.panel2 = new System.Windows.Forms.Panel();
+			this.downloadPageLinkLabel = new System.Windows.Forms.LinkLabel();
+			this.lastVersionLabel = new System.Windows.Forms.LinkLabel();
+			this.panel5 = new System.Windows.Forms.Panel();
 			this.panel3.SuspendLayout();
 			this.SuspendLayout();
 			// 
@@ -77,7 +80,7 @@ namespace namaichi
 			// communityLinkLabel
 			// 
 			this.communityLinkLabel.Dock = System.Windows.Forms.DockStyle.Top;
-			this.communityLinkLabel.Location = new System.Drawing.Point(0, 56);
+			this.communityLinkLabel.Location = new System.Drawing.Point(0, 99);
 			this.communityLinkLabel.Name = "communityLinkLabel";
 			this.communityLinkLabel.Size = new System.Drawing.Size(318, 22);
 			this.communityLinkLabel.TabIndex = 6;
@@ -90,7 +93,7 @@ namespace namaichi
 			// 
 			this.panel3.Controls.Add(this.button1);
 			this.panel3.Dock = System.Windows.Forms.DockStyle.Top;
-			this.panel3.Location = new System.Drawing.Point(0, 88);
+			this.panel3.Location = new System.Drawing.Point(0, 131);
 			this.panel3.Name = "panel3";
 			this.panel3.Size = new System.Drawing.Size(318, 33);
 			this.panel3.TabIndex = 25;
@@ -109,19 +112,55 @@ namespace namaichi
 			// panel2
 			// 
 			this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-			this.panel2.Location = new System.Drawing.Point(0, 78);
+			this.panel2.Location = new System.Drawing.Point(0, 121);
 			this.panel2.Name = "panel2";
 			this.panel2.Size = new System.Drawing.Size(318, 10);
 			this.panel2.TabIndex = 24;
+			// 
+			// downloadPageLinkLabel
+			// 
+			this.downloadPageLinkLabel.Dock = System.Windows.Forms.DockStyle.Top;
+			this.downloadPageLinkLabel.Location = new System.Drawing.Point(0, 80);
+			this.downloadPageLinkLabel.Name = "downloadPageLinkLabel";
+			this.downloadPageLinkLabel.Size = new System.Drawing.Size(318, 19);
+			this.downloadPageLinkLabel.TabIndex = 50;
+			this.downloadPageLinkLabel.TabStop = true;
+			this.downloadPageLinkLabel.Text = "https://guest-nico.github.io/pages/downloads.html";
+			this.downloadPageLinkLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this.downloadPageLinkLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.DownloadPageLinkLabelLinkClicked);
+			// 
+			// lastVersionLabel
+			// 
+			this.lastVersionLabel.Dock = System.Windows.Forms.DockStyle.Top;
+			this.lastVersionLabel.Font = new System.Drawing.Font("MS UI Gothic", 9F, System.Drawing.FontStyle.Italic, System.Drawing.GraphicsUnit.Point, ((byte)(128)));
+			this.lastVersionLabel.LinkArea = new System.Windows.Forms.LinkArea(0, 0);
+			this.lastVersionLabel.Location = new System.Drawing.Point(0, 61);
+			this.lastVersionLabel.Name = "lastVersionLabel";
+			this.lastVersionLabel.Size = new System.Drawing.Size(318, 19);
+			this.lastVersionLabel.TabIndex = 51;
+			this.lastVersionLabel.Text = "新しいバージョンを確認中です";
+			this.lastVersionLabel.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
+			this.lastVersionLabel.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.LastVersionLabelLinkClicked);
+			// 
+			// panel5
+			// 
+			this.panel5.Dock = System.Windows.Forms.DockStyle.Top;
+			this.panel5.Location = new System.Drawing.Point(0, 56);
+			this.panel5.Name = "panel5";
+			this.panel5.Size = new System.Drawing.Size(318, 5);
+			this.panel5.TabIndex = 52;
 			// 
 			// VersionForm
 			// 
 			this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
 			this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-			this.ClientSize = new System.Drawing.Size(318, 127);
+			this.ClientSize = new System.Drawing.Size(318, 168);
 			this.Controls.Add(this.panel3);
 			this.Controls.Add(this.panel2);
 			this.Controls.Add(this.communityLinkLabel);
+			this.Controls.Add(this.downloadPageLinkLabel);
+			this.Controls.Add(this.lastVersionLabel);
+			this.Controls.Add(this.panel5);
 			this.Controls.Add(this.versionLabel);
 			this.Controls.Add(this.label3);
 			this.Controls.Add(this.panel1);
@@ -129,10 +168,14 @@ namespace namaichi
 			this.Name = "VersionForm";
 			this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
 			this.Text = "バージョン情報";
+			this.Load += new System.EventHandler(this.VersionFormLoad);
 			this.panel3.ResumeLayout(false);
 			this.panel3.PerformLayout();
 			this.ResumeLayout(false);
 		}
+		private System.Windows.Forms.Panel panel5;
+		private System.Windows.Forms.LinkLabel lastVersionLabel;
+		private System.Windows.Forms.LinkLabel downloadPageLinkLabel;
 		public System.Windows.Forms.Button button1;
 		private System.Windows.Forms.Panel panel3;
 		private System.Windows.Forms.Panel panel2;

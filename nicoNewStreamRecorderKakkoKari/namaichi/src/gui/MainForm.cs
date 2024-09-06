@@ -402,7 +402,7 @@ namespace namaichi
 		
 		void versionMenu_Click(object sender, EventArgs e)
 		{
-			var v = new VersionForm();
+			var v = new VersionForm(this);
 			v.ShowDialog();
 		}
 		void startStdRead() {
