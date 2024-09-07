@@ -150,6 +150,10 @@
     <Compile Include="src\gui\MainForm.Designer.cs">
       <DependentUpon>MainForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="src\gui\MfaInputForm.cs" />
+    <Compile Include="src\gui\MfaInputForm.Designer.cs">
+      <DependentUpon>MfaInputForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="src\gui\NicoSessionComboBox2.cs" />
     <Compile Include="src\gui\optionForm.cs">
       <SubType>Form</SubType>
